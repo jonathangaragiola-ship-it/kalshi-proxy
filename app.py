@@ -26,3 +26,10 @@ def health():
 
 if __name__ == "__main__":
     app.run()
+
+@app.route("/kalshi/raw")
+def raw():
+    from flask import request
+    url = f"{KALSHI_BASE}/markets?{request.query_string.decode()}"
+    r = requests.get(url, headers=HEADERS, timeout=10)
+    return (r.content, r.status_code, {"Content-Type": "application/json"})
