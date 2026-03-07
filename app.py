@@ -26,12 +26,3 @@ def health():
 
 if __name__ == "__main__":
     app.run()
-```
-
-Update `requirements.txt` to add `flask-cors`:
-```
-flask
-flask-cors
-requests
-gunicorn
-```
