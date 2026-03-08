@@ -33,3 +33,9 @@ def raw():
     url = f"{KALSHI_BASE}/markets?{request.query_string.decode()}"
     r = requests.get(url, headers=HEADERS, timeout=10)
     return (r.content, r.status_code, {"Content-Type": "application/json"})
+
+@app.route('/metar/<station>')
+def metar(station):
+    url = f'https://aviationweather.gov/api/data/metar?ids={station}&format=json&taf=false'
+    r = requests.get(url, timeout=10)
+    return jsonify(r.json())
