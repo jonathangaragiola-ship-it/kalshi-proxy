@@ -36,6 +36,10 @@ def raw():
 
 @app.route('/metar/<station>')
 def metar(station):
+    from flask import request
+    hours = request.args.get('hours', None)
     url = f'https://aviationweather.gov/api/data/metar?ids={station}&format=json&taf=false'
+    if hours:
+        url += f'&hours={hours}'
     r = requests.get(url, timeout=10)
     return jsonify(r.json())
