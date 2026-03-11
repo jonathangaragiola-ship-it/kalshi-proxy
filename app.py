@@ -2,6 +2,8 @@ import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
 from kalshi_auth import test_auth, kalshi_get
+from kalshi_auth import test_auth, kalshi_get
+from trade_sync import sync_fills
 
 app = Flask(__name__)
 CORS(app)
@@ -33,6 +35,14 @@ def auth_test():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route("/sync-trades")
+def sync_trades():
+    try:
+        n = sync_fills()
+        return jsonify({"status": "ok", "trades_synced": n})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
 if __name__ == "__main__":
     app.run()
 
