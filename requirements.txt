@@ -2,6 +2,7 @@ flask
 flask-cors
 requests
 gunicorn
-supabase
+supabase==2.3.4
 cryptography
 apscheduler
+httpx==0.24.1
