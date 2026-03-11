@@ -62,3 +62,16 @@ def metar(station):
         url += f'&hours={hours}'
     r = requests.get(url, timeout=10)
     return jsonify(r.json())
+
+@app.route("/test-supabase")
+def test_supabase():
+    try:
+        from supabase import create_client
+        import os
+        url = os.environ["SUPABASE_URL"]
+        key = os.environ["SUPABASE_KEY"]
+        sb = create_client(url, key)
+        result = sb.table("trades").select("id").limit(1).execute()
+        return jsonify({"status": "ok", "url": url[:30], "result": str(result)})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e), "url": os.environ.get("SUPABASE_URL", "NOT SET")[:30]}), 500
