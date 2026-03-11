@@ -1,6 +1,7 @@
 import requests
 from flask import Flask, jsonify
 from flask_cors import CORS
+from kalshi_auth import test_auth, kalshi_get
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +24,14 @@ def get_series(series_ticker):
 @app.route("/health")
 def health():
     return jsonify({"status": "ok"})
+
+@app.route("/auth-test")
+def auth_test():
+    try:
+        data = kalshi_get("/trade-api/v2/portfolio/balance")
+        return jsonify({"status": "ok", "data": data})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
     app.run()
