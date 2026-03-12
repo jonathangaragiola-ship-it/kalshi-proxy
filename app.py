@@ -102,18 +102,12 @@ def test_mesonet():
         r = requests.get(
             "https://mesonet.agron.iastate.edu/cgi-bin/request/daily.py",
             params={
-                "network":  "ASOS",
-                "station":  "DCA",
-                "year1":    2026,
-                "month1":   3,
-                "day1":     10,
-                "year2":    2026,
-                "month2":   3,
-                "day2":     10,
-                "vars[]":   "max_tmpf",
-                "what":     "view",
-                "delim":    "comma",
-                "gis":      "no",
+                "network":   "VA_ASOS",
+                "stations":  "DCA",
+                "var":       "max_tmpf",
+                "sts":       "2026-03-10",
+                "ets":       "2026-03-10",
+                "format":    "csv",
             },
             timeout=15
         )
