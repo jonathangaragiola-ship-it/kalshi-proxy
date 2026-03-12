@@ -87,6 +87,14 @@ def versions():
         "python": sys.version
     })
 
+@app.route("/backfill-settlements")
+def backfill_settlements():
+    try:
+        from settlement_backfill import run_backfill
+        n = run_backfill()
+        return jsonify({"status": "ok", "trades_updated": n})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
