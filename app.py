@@ -96,6 +96,31 @@ def backfill_settlements():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route("/test-mesonet")
+def test_mesonet():
+    try:
+        r = requests.get(
+            "https://mesonet.agron.iastate.edu/cgi-bin/request/daily.py",
+            params={
+                "network":  "ASOS",
+                "station":  "DCA",
+                "year1":    2026,
+                "month1":   3,
+                "day1":     10,
+                "year2":    2026,
+                "month2":   3,
+                "day2":     10,
+                "vars[]":   "max_tmpf",
+                "what":     "view",
+                "delim":    "comma",
+                "gis":      "no",
+            },
+            timeout=15
+        )
+        return jsonify({"status": "ok", "code": r.status_code, "text": r.text[:500]})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+        
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
