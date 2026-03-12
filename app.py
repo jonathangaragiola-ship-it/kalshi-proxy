@@ -75,3 +75,13 @@ def test_supabase():
         return jsonify({"status": "ok", "url": url[:30], "result": str(result)})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e), "url": os.environ.get("SUPABASE_URL", "NOT SET")[:30]}), 500
+
+@app.route("/versions")
+def versions():
+    import supabase, httpx, httpcore
+    return jsonify({
+        "supabase": supabase.__version__,
+        "httpx": httpx.__version__,
+        "httpcore": httpcore.__version__,
+        "python": __import__('sys').version
+    })
