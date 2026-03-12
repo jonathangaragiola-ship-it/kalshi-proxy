@@ -169,9 +169,14 @@ def sync_fills(cursor=None):
             print("Full sync — no existing trades found")
 
     # Fetch fills from Kalshi portfolio API
+    # min_ts must be Unix timestamp in seconds (integer), not ISO string
     params = {"limit": 200}
     if cursor:
-        params["min_ts"] = cursor
+        try:
+            dt = datetime.fromisoformat(cursor.replace("Z", "+00:00"))
+            params["min_ts"] = int(dt.timestamp())
+        except Exception:
+            pass  # if parsing fails, do a full sync
 
     data  = kalshi_get("/trade-api/v2/portfolio/fills", params=params)
     fills = data.get("fills", [])
