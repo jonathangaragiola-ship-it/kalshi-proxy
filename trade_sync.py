@@ -1,7 +1,7 @@
 """
 trade_sync.py
 Pulls fill history from Kalshi portfolio API and writes to Supabase trades table.
-Run on a schedule (every 30 min) or manually.
+Run on a schedule or manually via /sync-trades endpoint.
 """
 
 import os
@@ -51,7 +51,7 @@ def sb_select(table, select="*", order=None, limit=None, filters=None):
     if order:
         params["order"] = order
     if limit:
-        params["limit"] = limit
+        params["limit"] = str(limit)
     if filters:
         params.update(filters)
     r = requests.get(url, headers=headers, params=params, timeout=15)
@@ -61,9 +61,24 @@ def sb_select(table, select="*", order=None, limit=None, filters=None):
 
 def parse_ticker(ticker):
     """
-    Extract city, trade_date, bracket_label from a Kalshi ticker.
-    e.g. KXHIGHAUS-26MAR07-B79 → city=KAUS, date=2026-03-07, bracket=79+
-    Returns dict or None if not a weather market.
+    Extract city, trade_date, bracket_label, lo, hi from a Kalshi ticker.
+
+    Ticker formats observed:
+      KXHIGHAUS-26MAR07-B79      between, old format (integer)
+      KXHIGHTDC-26MAR12-B74.5   between, new format (float midpoint)
+      KXHIGHTDC-26MAR12-T75     greater than (above threshold)
+      KXHIGHTDC-26MAR12-T68     less than (below threshold) — need market lookup
+      KXHIGHAUS-26MAR07-B60.5   between, float midpoint
+
+    For between brackets: ticker midpoint = (floor + cap) / 2
+      B74.5 → floor=74, cap=75 → label='74-75'
+      B79   → floor=79, cap=80 → label='79-80'
+      B60.5 → floor=60, cap=61 → label='60-61'
+
+    For threshold brackets (T prefix): direction (> or <) stored in
+    strike_type on the market object, which we don't have here.
+    We store lo/hi as best guess and label as the raw value.
+    Settlement backfill will correct via market lookup if needed.
     """
     m = re.match(r"([A-Z]+)-(\d{2})([A-Z]{3})(\d{2})-(.+)", ticker)
     if not m:
@@ -74,26 +89,40 @@ def parse_ticker(ticker):
     if not city:
         return None
 
+    # Parse settlement date
     try:
         date_str = f"20{yy}-{mon}-{dd}"
         trade_date = datetime.strptime(date_str, "%Y-%b-%d").date()
     except ValueError:
         return None
 
-    lo, hi, label = None, None, bracket_code
+    lo, hi, label = None, None, bracket_code  # fallback label = raw code
+
     if bracket_code.startswith("B"):
+        # Between bracket — midpoint may be integer or float with .5
+        # B74.5 → floor=74, cap=75
+        # B79   → floor=79, cap=80
         try:
-            lo = int(bracket_code[1:])
-            hi = lo + 2
-            label = f"{lo}-{hi-1}"
+            mid = float(bracket_code[1:])
+            floor = int(mid - 0.5) if mid % 1 == 0.5 else int(mid)
+            cap   = floor + 1
+            lo    = floor
+            hi    = cap + 1   # hi is exclusive upper bound for range checks
+            label = f"{floor}-{cap}"
         except ValueError:
             pass
+
     elif bracket_code.startswith("T"):
+        # Threshold bracket — T75 could be >75 or <75
+        # We don't know direction without the market object.
+        # Store the strike value and let settlement backfill correct.
         try:
-            val = int(bracket_code[1:])
-            lo = val + 1
-            hi = None
-            label = f"{val+1}+"
+            strike = int(float(bracket_code[1:]))
+            # Conservative guess: store as lo=strike+1 (greater than)
+            # Settlement backfill will correct this via market lookup
+            lo    = strike + 1
+            hi    = None
+            label = f"{strike}+"   # placeholder — may be ≤ direction
         except ValueError:
             pass
 
@@ -109,7 +138,7 @@ def parse_ticker(ticker):
 def infer_strategy(price, side, is_maker):
     """
     Tag each trade with the most likely strategy.
-    edge1 = selling longshot YES (buying NO at high price)
+    edge1 = selling longshot YES / buying NO on tails
     edge2 = model divergence trade
     """
     if side == "no" and price >= 75:
@@ -121,11 +150,11 @@ def infer_strategy(price, side, is_maker):
 
 def sync_fills(cursor=None):
     """
-    Pull fills from Kalshi and upsert to Supabase.
-    cursor: ISO timestamp string to fetch fills after (for incremental sync).
+    Pull fills from Kalshi and upsert to Supabase trades table.
+    cursor: ISO timestamp to fetch fills after (incremental sync).
     Returns number of fills synced.
     """
-    # Determine cursor — find most recent fill we already have
+    # Find most recent fill we already have for incremental sync
     if cursor is None:
         result = sb_select(
             "trades",
@@ -139,7 +168,7 @@ def sync_fills(cursor=None):
         else:
             print("Full sync — no existing trades found")
 
-    # Fetch fills from Kalshi
+    # Fetch fills from Kalshi portfolio API
     params = {"limit": 200}
     if cursor:
         params["min_ts"] = cursor
@@ -160,13 +189,14 @@ def sync_fills(cursor=None):
             print(f"  Skipping non-weather ticker: {ticker}")
             continue
 
-        side      = f.get("side", "").lower()
-        action    = f.get("action", "").lower()
-        price     = f.get("yes_price", 0)
-        count     = f.get("count", 0)
-        fees      = f.get("fees", 0)
-        is_maker  = f.get("is_taker", True) == False
-        fill_id   = f.get("fill_id") or f.get("id", "")
+        # Normalize price — Kalshi returns yes_price in cents
+        side      = f.get("side", "").lower()        # 'yes' or 'no'
+        action    = f.get("action", "").lower()       # 'buy' or 'sell'
+        price     = int(f.get("yes_price", 0))        # cents
+        count     = int(f.get("count", 0))            # contracts
+        fees      = int(f.get("fees", 0))             # cents
+        is_maker  = not f.get("is_taker", True)
+        fill_id   = f.get("fill_id") or f.get("id", ticker)
         filled_at = f.get("created_time") or f.get("timestamp", "")
 
         row = {
