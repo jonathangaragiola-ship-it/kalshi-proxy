@@ -163,7 +163,6 @@ def run_backfill():
         t for t in all_trades
         if t.get("cli_high") is None
         and t.get("trade_date") is not None
-        and datetime.strptime(t["trade_date"], "%Y-%m-%d").date() < today
     ]
 
     if not unsettled:
