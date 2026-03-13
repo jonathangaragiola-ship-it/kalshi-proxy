@@ -2,6 +2,3 @@ flask
 flask-cors
 requests
 gunicorn
-cryptography
-apscheduler
-supabase
