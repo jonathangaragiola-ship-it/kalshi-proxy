@@ -1,9 +1,6 @@
-import os
 import requests
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from kalshi_auth import kalshi_get
-from trade_sync import sync_fills
 
 app = Flask(__name__)
 CORS(app)
@@ -48,73 +45,7 @@ def metar(station):
     return jsonify(r.json())
 
 
-@app.route("/auth-test")
-def auth_test():
-    try:
-        data = kalshi_get("/trade-api/v2/portfolio/balance")
-        return jsonify({"status": "ok", "data": data})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@app.route("/test-supabase")
-def test_supabase():
-    try:
-        url = os.environ["SUPABASE_URL"] + "/rest/v1/trades"
-        headers = {
-            "apikey":        os.environ["SUPABASE_KEY"],
-            "Authorization": f"Bearer {os.environ['SUPABASE_KEY']}",
-        }
-        r = requests.get(url, headers=headers, params={"select": "id", "limit": "1"}, timeout=15)
-        return jsonify({"status": "ok", "code": r.status_code, "data": r.json()})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@app.route("/sync-trades")
-def sync_trades():
-    try:
-        n = sync_fills()
-        return jsonify({"status": "ok", "trades_synced": n})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@app.route("/versions")
-def versions():
-    import sys
-    return jsonify({
-        "python": sys.version
-    })
-
-@app.route("/backfill-settlements")
-def backfill_settlements():
-    try:
-        from settlement_backfill import run_backfill
-        n = run_backfill()
-        return jsonify({"status": "ok", "trades_updated": n})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route("/test-mesonet")
-def test_mesonet():
-    try:
-        r = requests.get(
-            "https://mesonet.agron.iastate.edu/cgi-bin/request/daily.py",
-            params={
-                "network":   "VA_ASOS",
-                "stations":  "DCA",
-                "var":       "max_tmpf",
-                "sts":       "2026-03-10",
-                "ets":       "2026-03-10",
-                "format":    "csv",
-            },
-            timeout=15
-        )
-        return jsonify({"status": "ok", "code": r.status_code, "text": r.text[:500]})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-        
 if __name__ == "__main__":
+    import os
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
