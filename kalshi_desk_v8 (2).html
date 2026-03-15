@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kalshi Weather Desk v7</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f6f9;--white:#fff;--border:#dde3ec;--border2:#c5cdd9;
+  --text:#1a2332;--sub:#4a5568;--dim:#8896aa;--faint:#f0f3f8;--faint2:#e8edf5;
+  --g:#00875a;--g-bg:#e6f4ef;--g-bd:#b3dece;
+  --r:#c0392b;--r-bg:#fdecea;--r-bd:#fca5a5;
+  --a:#b45309;--a-bg:#fef3e2;--a-bd:#fcd89a;
+  --b:#1565c0;--b-bg:#e8f0fe;--b-bd:#a8c7fa;
+  --p:#6d28d9;--p-bg:#f3e8ff;--p-bd:#d8b4fe;
+  --teal:#0e7490;--teal-bg:#e0f7fa;--teal-bd:#80deea;
+  --mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh}
+.root{max-width:480px;margin:0 auto}
+
+.hdr{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.hdr-l{display:flex;align-items:center;gap:8px}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--g);box-shadow:0 0 0 2px var(--g-bg);animation:blink 2.5s ease-in-out infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.hdr-title{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.5px}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.hdr-time{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.ref-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:5px 10px;font-family:var(--mono);font-size:10px;color:var(--sub);cursor:pointer;letter-spacing:.5px;transition:all .15s}
+.ref-btn:active{background:var(--faint)}
+
+.opps{background:var(--white);border-bottom:2px solid var(--border);padding:11px 16px}
+.strip-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.strip-lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.opp-list{display:flex;flex-direction:column;gap:5px}
+.opp{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--white);cursor:pointer;transition:border-color .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+.opp:hover{border-color:var(--border2);box-shadow:var(--shadow)}.opp:active{opacity:.9}
+.opp-rank{width:30px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:500;border-right:1px solid var(--border);background:var(--faint);flex-shrink:0}
+.n1{color:var(--g)}.n2{color:var(--a)}.n3{color:var(--b)}
+.opp-body{flex:1;padding:7px 10px;min-width:0}
+.opp-city{font-weight:600;font-size:13px}
+.opp-sub{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:1px}
+.opp-act{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opp-edge{padding:7px 11px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;flex-shrink:0}
+.edge-v{font-family:var(--mono);font-size:16px;font-weight:500;line-height:1}
+.edge-l{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+.eg{color:var(--g)}.ea{color:var(--a)}.eb{color:var(--b)}
+.opp-ph{font-size:12px;color:var(--dim);font-family:var(--mono)}
+
+.sels{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--white)}
+.sg{flex:1;display:flex;flex-direction:column;gap:4px}
+.sg label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+.sg select{width:100%;background:var(--white);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-size:14px;font-weight:500;padding:9px 28px 9px 10px;border-radius:6px;outline:none;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6' fill='none' stroke='%238896aa' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:9px;box-shadow:0 1px 2px rgba(0,0,0,.04);transition:border-color .15s}
+.sg select:focus{border-color:var(--b)}
+
+.body{padding:0 16px 60px}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 0 8px}
+.sec-ttl{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim)}
+.sec-meta{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.sec-meta.stale{color:var(--a)}.sec-meta.fresh{color:var(--g)}
+
+/* METAR observation card */
+.obs-card{display:flex;gap:10px;margin-bottom:10px}
+.obs-tile{flex:1;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 12px;box-shadow:var(--shadow)}
+.obs-lbl{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.obs-val{font-family:var(--mono);font-size:22px;font-weight:500;line-height:1}
+.obs-sub{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:3px}
+.obs-na{color:var(--dim);font-size:13px}
+.ov-warm{color:var(--r)}.ov-cool{color:var(--b)}.ov-ok{color:var(--g)}
+
+/* Model adjustment pill */
+.adj-bar{background:var(--faint2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;margin-bottom:10px;font-family:var(--mono);font-size:11px;line-height:1.7}
+.adj-row{display:flex;justify-content:space-between;align-items:center}
+.adj-lbl{color:var(--dim)}
+.adj-val{font-weight:500}
+.adj-val.up{color:var(--r)}.adj-val.dn{color:var(--b)}.adj-val.ok{color:var(--g)}
+.adj-regime{display:inline-block;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:600;letter-spacing:.5px;margin-left:6px;vertical-align:middle}
+.reg-clean{background:var(--g-bg);color:var(--g);border:1px solid var(--g-bd)}
+.reg-front{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bd)}
+.reg-conv{background:var(--r-bg);color:var(--r);border:1px solid var(--r-bd)}
+.reg-uncert{background:var(--a-bg);color:var(--a);border:1px solid var(--a-bd)}
+
+.live-bar{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:7px;margin-bottom:8px;font-family:var(--mono);font-size:11px;line-height:1.5}
+.live-bar.ok{background:var(--g-bg);color:var(--g);border:1px solid var(--g-bd)}
+.live-bar.fail{background:var(--a-bg);color:var(--a);border:1px solid var(--a-bd)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;animation:blink 2.5s ease-in-out infinite}
+
+.tbl{border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:2px}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);padding:8px 11px;border-bottom:1px solid var(--border);font-weight:400;background:var(--faint);text-align:left}
+th.r{text-align:right}
+td{padding:9px 11px;border-bottom:1px solid #edf1f7;vertical-align:middle}
+td.r{text-align:right}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfe}
+tr.ss td{background:#f0fbf6}tr.ss td:first-child{border-left:3px solid var(--g);padding-left:8px}
+tr.sb td{background:#f6fdf9}tr.sb td:first-child{border-left:3px solid #4ade80;padding-left:8px}
+tr.sl td{background:#eef4ff}tr.sl td:first-child{border-left:3px solid var(--b);padding-left:8px}
+tr.sm td{background:#fffbf0}tr.sm td:first-child{border-left:3px solid #f59e0b;padding-left:8px}
+tr.sdead td{background:var(--faint);opacity:.5}
+
+.brk{font-family:var(--mono);font-size:12px;font-weight:500}
+.pct{font-family:var(--mono);font-size:12px}
+.ph{color:var(--g);font-weight:500}.pm{color:var(--a);font-weight:500}.pl{color:var(--dim)}
+.pmkt{font-family:var(--mono);font-size:12px;color:var(--sub)}
+.act-cell{font-size:12px;line-height:1.45}
+.ag{color:var(--g);font-weight:600}.ag2{color:#166534}
+.ab{color:var(--b);font-weight:500}.am{color:var(--a)}
+.an{color:var(--dim);font-size:11px}.ask{color:var(--r);font-size:11px}
+.asub{display:block;font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:1px}
+.adead{color:var(--dim);font-size:11px;font-style:italic}
+
+.mn{font-size:13px;font-weight:500}
+.ms{font-family:var(--mono);font-size:10px;color:var(--dim);display:block;margin-top:1px}
+.mrun{font-family:var(--mono);font-size:9px;display:block;margin-top:2px}
+.mrun.fresh{color:var(--g)}.mrun.aging{color:var(--a)}.mrun.stale{color:var(--r)}
+.mtemp{font-family:var(--mono);font-size:16px;font-weight:500}
+.mc{color:var(--g)}.mw{color:var(--a)}.ml{color:var(--b)}.mna{color:var(--dim);font-size:12px}
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:3px;margin-left:5px;vertical-align:middle}
+.bf{background:var(--g-bg);color:var(--g);border:1px solid var(--g-bd)}
+.bn{background:var(--faint);color:var(--dim);border:1px solid var(--border)}
+.ens-row td{background:var(--faint2)}
+
+.nws-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px;box-shadow:var(--shadow)}
+.nws-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+.nws-ttl{font-size:13px;font-weight:600}
+.nws-ts{font-family:var(--mono);font-size:10px;color:var(--dim);white-space:nowrap;flex-shrink:0}
+.nws-flags{display:flex;flex-direction:column;gap:7px}
+.flag{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border-radius:6px;font-size:12px;line-height:1.55}
+.flag-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.flag-title{font-weight:600;display:block;margin-bottom:1px}
+.flag-desc{color:var(--sub)}
+.fw{background:var(--r-bg);border:1px solid var(--r-bd)}.fw .flag-title{color:var(--r)}
+.fc{background:var(--a-bg);border:1px solid var(--a-bd)}.fc .flag-title{color:var(--a)}
+.fi{background:var(--b-bg);border:1px solid var(--b-bd)}.fi .flag-title{color:var(--b)}
+.fg{background:var(--g-bg);border:1px solid var(--g-bd)}.fg .flag-title{color:var(--g)}
+.ft{background:var(--teal-bg);border:1px solid var(--teal-bd)}.ft .flag-title{color:var(--teal)}
+.nws-clean{font-size:13px;color:var(--sub);padding:4px 0}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:52px 0}
+.spin{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;line-height:2}
+.empty-st{padding:40px 16px;text-align:center;font-size:13px;color:var(--dim);line-height:2.2}
+.err-box{background:var(--r-bg);border:1px solid var(--r-bd);border-radius:8px;padding:14px;margin:8px 0;font-size:12px;color:var(--r);line-height:1.8}
+.dbg{font-family:var(--mono);font-size:10px;color:var(--sub);margin-top:8px;padding-top:8px;border-top:1px solid var(--r-bd);line-height:1.8;word-break:break-all}
+
+/* ── TABS ───────────────────────────────── */
+.tab-nav{display:flex;background:var(--white);border-bottom:2px solid var(--border);padding:0 16px;gap:0;position:sticky;top:49px;z-index:190}
+.tab-btn{flex:1;padding:10px 0;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.tab-btn.active{color:var(--b);border-bottom-color:var(--b);font-weight:500}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── STATS TAB ──────────────────────────── */
+.stats-body{padding:12px 16px 60px}
+.stat-section{margin-bottom:18px}
+.stat-hd{font-family:var(--mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);padding:12px 0 8px;display:flex;align-items:center;gap:8px}
+.stat-hd::after{content:'';flex:1;height:1px;background:var(--border)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 10px;text-align:center;box-shadow:var(--shadow)}
+.kpi-v{font-family:var(--mono);font-size:20px;font-weight:500;line-height:1}
+.kpi-l{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:4px}
+.kpi-v.green{color:var(--g)}.kpi-v.red{color:var(--r)}.kpi-v.blue{color:var(--b)}.kpi-v.amber{color:var(--a)}
+.stat-tbl{background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-shadow:var(--shadow)}
+.stat-tbl table{width:100%;border-collapse:collapse}
+.stat-tbl th{font-family:var(--mono);font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:7px 10px;border-bottom:1px solid var(--border);background:var(--faint);text-align:left;font-weight:400}
+.stat-tbl th.r{text-align:right}
+.stat-tbl td{padding:8px 10px;border-bottom:1px solid #edf1f7;font-family:var(--mono);font-size:12px;vertical-align:middle}
+.stat-tbl td.r{text-align:right}
+.stat-tbl tr:last-child td{border-bottom:none}
+.stat-tbl tr:hover td{background:#fafbfe}
+.win-bar{height:5px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:3px}
+.win-fill{height:100%;border-radius:3px;background:var(--g);transition:width .3s}
+.win-fill.below{background:var(--r)}
+.stat-loading{padding:30px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="root">
+
+<div class="hdr">
+  <div class="hdr-l"><div class="pip"></div><div class="hdr-title">KALSHI WEATHER DESK <span style="font-size:10px;color:var(--dim)">v8.0</span></div></div>
+  <div class="hdr-r">
+    <div class="hdr-time" id="clock">--:--</div>
+    <button class="ref-btn" onclick="reload()">↺ REFRESH</button>
+  </div>
+</div>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('desk')">DESK</button>
+  <button class="tab-btn" onclick="switchTab('stats')">STATS</button>
+</div>
+
+<div id="tab-desk" class="tab-pane active">
+<div class="opps">
+  <div class="strip-lbl">Top 3 Opportunities</div>
+  <div class="opp-list" id="opp-list"><div class="opp-ph">Load a city to surface opportunities</div></div>
+</div>
+
+<div class="sels">
+  <div class="sg">
+    <label>Date</label>
+    <select id="sel-date"></select>
+  </div>
+  <div class="sg">
+    <label>City</label>
+    <select id="sel-city">
+      <option value="">— Select city —</option>
+      <option value="KATL">Atlanta GA</option>
+      <option value="KAUS">Austin TX</option>
+      <option value="KBOS">Boston MA</option>
+      <option value="KORD">Chicago IL</option>
+      <option value="KDFW">Dallas TX</option>
+      <option value="KDEN">Denver CO</option>
+      <option value="KIAH">Houston TX</option>
+      <option value="KLAS">Las Vegas NV</option>
+      <option value="KLAX">Los Angeles CA</option>
+      <option value="KMIA">Miami FL</option>
+      <option value="KMSP">Minneapolis MN</option>
+      <option value="KMSY">New Orleans LA</option>
+      <option value="KNYC">New York NY</option>
+      <option value="KOKC">Oklahoma City OK</option>
+      <option value="KPHL">Philadelphia PA</option>
+      <option value="KPHX">Phoenix AZ</option>
+      <option value="KSAT">San Antonio TX</option>
+      <option value="KSFO">San Francisco CA</option>
+      <option value="KSEA">Seattle WA</option>
+      <option value="KDCA">Washington DC</option>
+    </select>
+  </div>
+</div>
+
+<div class="body" id="body">
+  <div class="empty-st">Select a date and city<br>to load live forecasts &amp; signals</div>
+</div>
+
+</div><!-- end #tab-desk -->
+
+<div id="tab-stats" class="tab-pane">
+  <div class="stats-body" id="stats-body">
+    <div class="stat-loading">Loading trade stats...</div>
+  </div>
+</div>
+
+</div><!-- end .root -->
+<script>
+'use strict';
+
+const PROXY = 'https://kalshi-proxy.jonathan-garagiola.workers.dev';
+const KALSHI_BASE = PROXY + '/kalshi';
+const METAR_BASE = PROXY + '/metar';
+
+/* ══════════════════════════════════════════
+   STATION CONFIG
+   peak = local hour when daily high typically occurs
+   metar = ICAO station code for METAR obs (same as key usually)
+══════════════════════════════════════════ */
+const ST = {
+  KATL:{n:'Atlanta GA',       lat:33.6407,  lon:-84.4277,  tz:'America/New_York',    nws:'ffc', ks:'KXHIGHTATL',  peak:15, metar:'KATL'},
+  KAUS:{n:'Austin TX',        lat:30.1945,  lon:-97.6699,  tz:'America/Chicago',     nws:'ewx', ks:'KXHIGHAUS',   peak:15, metar:'KAUS'},
+  KBOS:{n:'Boston MA',        lat:42.3656,  lon:-71.0096,  tz:'America/New_York',    nws:'box', ks:'KXHIGHTBOS',  peak:14, metar:'KBOS'},
+  KORD:{n:'Chicago IL',       lat:41.9742,  lon:-87.9073,  tz:'America/Chicago',     nws:'lot', ks:'KXHIGHCHI',   peak:15, metar:'KORD'},
+  KDFW:{n:'Dallas TX',        lat:32.8998,  lon:-96.9978,  tz:'America/Chicago',     nws:'fwd', ks:'KXHIGHTDAL',  peak:15, metar:'KDFW'},
+  KDEN:{n:'Denver CO',        lat:39.8561,  lon:-104.674,  tz:'America/Denver',      nws:'bou', ks:'KXHIGHDEN',   peak:14, metar:'KDEN'},
+  KIAH:{n:'Houston TX',       lat:29.9902,  lon:-95.3386,  tz:'America/Chicago',     nws:'hgx', ks:'KXHIGHTHOU',  peak:15, metar:'KIAH'},
+  KLAS:{n:'Las Vegas NV',     lat:36.0840,  lon:-115.152,  tz:'America/Los_Angeles', nws:'vef', ks:'KXHIGHTLV',   peak:15, metar:'KLAS'},
+  KLAX:{n:'Los Angeles CA',   lat:33.9425,  lon:-118.408,  tz:'America/Los_Angeles', nws:'lox', ks:'KXHIGHLAX',   peak:14, metar:'KLAX'},
+  KMIA:{n:'Miami FL',         lat:25.7959,  lon:-80.2870,  tz:'America/New_York',    nws:'mfl', ks:'KXHIGHMIA',   peak:14, metar:'KMIA'},
+  KMSP:{n:'Minneapolis MN',   lat:44.8808,  lon:-93.2169,  tz:'America/Chicago',     nws:'mpx', ks:'KXHIGHTMIN',  peak:15, metar:'KMSP'},
+  KMSY:{n:'New Orleans LA',   lat:29.9930,  lon:-90.2580,  tz:'America/Chicago',     nws:'lix', ks:'KXHIGHTNOLA', peak:15, metar:'KMSY'},
+  KNYC:{n:'New York NY',      lat:40.7789,  lon:-73.9692,  tz:'America/New_York',    nws:'okx', ks:'KXHIGHNY',    peak:14, metar:'KLGA'},
+  KOKC:{n:'Oklahoma City OK', lat:35.4237,  lon:-97.4781,  tz:'America/Chicago',     nws:'oun', ks:'KXHIGHTOKC',  peak:15, metar:'KOKC'},
+  KPHL:{n:'Philadelphia PA',  lat:39.8744,  lon:-75.2424,  tz:'America/New_York',    nws:'phi', ks:'KXHIGHPHIL',  peak:14, metar:'KPHL'},
+  KPHX:{n:'Phoenix AZ',       lat:33.4373,  lon:-112.008,  tz:'America/Phoenix',     nws:'psr', ks:'KXHIGHTPHX',  peak:15, metar:'KPHX'},
+  KSAT:{n:'San Antonio TX',   lat:29.5337,  lon:-98.4698,  tz:'America/Chicago',     nws:'ewx', ks:'KXHIGHTSATX', peak:15, metar:'KSAT'},
+  KSFO:{n:'San Francisco CA', lat:37.6213,  lon:-122.379,  tz:'America/Los_Angeles', nws:'mtr', ks:'KXHIGHTSFO',  peak:14, metar:'KSFO'},
+  KSEA:{n:'Seattle WA',       lat:47.4502,  lon:-122.309,  tz:'America/Los_Angeles', nws:'sew', ks:'KXHIGHTSEA',  peak:14, metar:'KSEA'},
+  KDCA:{n:'Washington DC',    lat:38.8521,  lon:-77.0377,  tz:'America/New_York',    nws:'lwx', ks:'KXHIGHTDC',   peak:14, metar:'KDCA'},
+};
+
+/* ══════════════════════════════════════════
+   ET DATE HELPERS
+══════════════════════════════════════════ */
+function etTodayISO() {
+  return new Date().toLocaleDateString('en-CA', {timeZone:'America/New_York'});
+}
+function offsetISO(iso, days) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+function fmtDateLong(iso) {
+  const [y,m,d] = iso.split('-');
+  return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+}
+function fmtDateShort(iso) {
+  const [y,m,d] = iso.split('-');
+  return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+}
+function kalshiEventTicker(seriesTicker, iso) {
+  const [y,m,d] = iso.split('-');
+  const mo = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'][+m-1];
+  return `${seriesTicker}-${String(y).slice(2)}${mo}${d}`;
+}
+function populateDateDropdown() {
+  const sel = document.getElementById('sel-date');
+  sel.innerHTML = '';
+  const today = etTodayISO();
+  [{iso:offsetISO(today,-1),label:'Yesterday'},{iso:today,label:'Today'},{iso:offsetISO(today,1),label:'Tomorrow'}]
+  .forEach(({iso,label}) => {
+    const opt = document.createElement('option');
+    opt.value = iso; opt.textContent = fmtDateLong(iso);
+    if (label==='Today') opt.selected = true;
+    sel.appendChild(opt);
+  });
+  return today;
+}
+
+/* ══════════════════════════════════════════
+   LOCAL TIME HELPERS
+   Used to compute hours-to-peak in the city's
+   own timezone, not ET.
+══════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════
+   NWS QUICK LINKS — per city
+   hourly: digital forecast from NWS
+   afd:    Area Forecast Discussion
+   cli:    Climatological report (observed temps / settlement data)
+══════════════════════════════════════════ */
+const NWS_LINKS = {
+  KATL:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Atlanta&state=GA&site=FFC&textField1=33.6407&textField2=-84.4277&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=FFC&issuedby=FFC&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=ffc'},
+  KAUS:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Austin&state=TX&site=EWX&textField1=30.1945&textField2=-97.6699&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=EWX&issuedby=EWX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=ewx'},
+  KBOS:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Boston&state=MA&site=BOX&textField1=42.3656&textField2=-71.0096&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=BOX&issuedby=BOX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=box'},
+  KORD:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Chicago&state=IL&site=LOT&textField1=41.9742&textField2=-87.9073&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=LOT&issuedby=LOT&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=lot'},
+  KDFW:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Dallas&state=TX&site=FWD&textField1=32.8998&textField2=-96.9978&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=FWD&issuedby=FWD&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=fwd'},
+  KDEN:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Denver&state=CO&site=BOU&textField1=39.8561&textField2=-104.674&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=BOU&issuedby=BOU&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=bou'},
+  KIAH:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Houston&state=TX&site=HGX&textField1=29.9902&textField2=-95.3386&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=HGX&issuedby=HGX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=hgx'},
+  KLAS:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Las+Vegas&state=NV&site=VEF&textField1=36.0840&textField2=-115.152&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=VEF&issuedby=VEF&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=vef'},
+  KLAX:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Los+Angeles&state=CA&site=LOX&textField1=33.9425&textField2=-118.408&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=LOX&issuedby=LOX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=lox'},
+  KMIA:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Miami&state=FL&site=MFL&textField1=25.7959&textField2=-80.2870&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=MFL&issuedby=MFL&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=mfl'},
+  KMSP:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Minneapolis&state=MN&site=MPX&textField1=44.8808&textField2=-93.2169&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=MPX&issuedby=MPX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=mpx'},
+  KMSY:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=New+Orleans&state=LA&site=LIX&textField1=29.9930&textField2=-90.2580&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=LIX&issuedby=LIX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=lix'},
+  KNYC:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=New+York+City&state=NY&site=OKX&textField1=40.7789&textField2=-73.9692&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=OKX&issuedby=OKX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=okx'},
+  KOKC:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Oklahoma+City&state=OK&site=OUN&textField1=35.4237&textField2=-97.4781&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=OUN&issuedby=OUN&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=oun'},
+  KPHL:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Philadelphia&state=PA&site=PHI&textField1=39.8744&textField2=-75.2424&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=PHI&issuedby=PHI&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=phi'},
+  KPHX:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Phoenix&state=AZ&site=PSR&textField1=33.4373&textField2=-112.008&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=PSR&issuedby=PSR&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=psr'},
+  KSAT:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=San+Antonio&state=TX&site=EWX&textField1=29.5337&textField2=-98.4698&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=EWX&issuedby=EWX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=ewx'},
+  KSFO:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=San+Francisco&state=CA&site=MTR&textField1=37.6213&textField2=-122.379&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=MTR&issuedby=MTR&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=mtr'},
+  KSEA:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Seattle&state=WA&site=SEW&textField1=47.4502&textField2=-122.309&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=SEW&issuedby=SEW&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=sew'},
+  KDCA:{hourly:'https://forecast.weather.gov/MapClick.php?CityName=Washington&state=DC&site=LWX&textField1=38.8521&textField2=-77.0377&FcstType=digital',afd:'https://forecast.weather.gov/product.php?site=LWX&issuedby=LWX&product=AFD',cli:'https://www.weather.gov/wrh/Climate?wfo=lwx'},
+};
+
+/* ══════════════════════════════════════════
+   SEASONAL PEAK HOUR LOOKUP
+   Peak heating time varies by city, season,
+   and coastal influence. Hardcoding a single
+   integer per city was systematically wrong
+   in summer (too early) and winter (too late).
+
+   Format: [winter, spring, summer, fall]
+   where season = month-based:
+     winter = Dec/Jan/Feb  (months 12,1,2)
+     spring = Mar/Apr/May  (months 3,4,5)
+     summer = Jun/Jul/Aug  (months 6,7,8)
+     fall   = Sep/Oct/Nov  (months 9,10,11)
+
+   Coastal cities with sea breeze (LAX, SFO, MIA)
+   peak earlier in summer due to onshore flow.
+   Desert cities (PHX, LAS) peak later in summer.
+   Continental cities (DEN, ORD, DFW) shift later
+   in summer due to afternoon convective suppression.
+══════════════════════════════════════════ */
+const PEAK_HOURS = {
+  //             win  spr  sum  fall
+  KATL:         [ 14,  15,  16,  15 ],
+  KAUS:         [ 14,  15,  16,  15 ],
+  KBOS:         [ 13,  14,  15,  14 ],
+  KORD:         [ 13,  14,  15,  14 ],
+  KDFW:         [ 14,  15,  16,  15 ],
+  KDEN:         [ 13,  14,  15,  14 ],
+  KIAH:         [ 14,  15,  16,  15 ],
+  KLAS:         [ 14,  15,  17,  15 ],  // desert, later peak in summer
+  KLAX:         [ 13,  14,  14,  14 ],  // sea breeze caps summer peak early
+  KMIA:         [ 13,  14,  14,  14 ],  // sea breeze
+  KMSP:         [ 13,  14,  15,  14 ],
+  KMSY:         [ 14,  15,  15,  15 ],
+  KNYC:         [ 13,  14,  15,  14 ],
+  KOKC:         [ 14,  15,  16,  15 ],
+  KPHL:         [ 13,  14,  15,  14 ],
+  KPHX:         [ 14,  15,  17,  15 ],  // desert, very late summer peak
+  KSAT:         [ 14,  15,  16,  15 ],
+  KSFO:         [ 12,  13,  13,  13 ],  // strong marine influence, earliest peak
+  KSEA:         [ 13,  14,  15,  14 ],
+  KDCA:         [ 13,  14,  15,  14 ],
+};
+function seasonIndex(iso) {
+  const m = +iso.split('-')[1];
+  if (m <= 2 || m === 12) return 0; // winter
+  if (m <= 5)             return 1; // spring
+  if (m <= 8)             return 2; // summer
+  return 3;                          // fall
+}
+function peakHourFor(key, iso) {
+  const row = PEAK_HOURS[key];
+  if (!row) return 15; // fallback
+  return row[seasonIndex(iso)];
+}
+
+function localHourNow(tz) {
+  return +new Date().toLocaleString('en-US',{timeZone:tz,hour:'numeric',hour12:false});
+}
+function hoursUntilPeak(key, iso) {
+  const cfg = ST[key];
+  const peak = peakHourFor(key, iso);
+  const todayISO = etTodayISO();
+  if (iso !== todayISO) {
+    const localH = localHourNow(cfg.tz);
+    return (24 - localH) + peak;
+  }
+  const localH = localHourNow(cfg.tz);
+  const diff = peak - localH;
+  return diff > 0 ? diff : 0;
+}
+
+/* ══════════════════════════════════════════
+   MODEL RUN SCHEDULE (UTC hours data available)
+══════════════════════════════════════════ */
+const RUNS = {
+  'GFS':       [{h:3,l:'10:30 PM'},{h:9,l:'4:30 AM'},{h:15,l:'10:30 AM'},{h:21,l:'4:30 PM'}],
+  'ECMWF IFS': [{h:5,l:'1:00 AM'},{h:17,l:'1:00 PM'}],
+  'ICON':      [{h:6,l:'2:00 AM'},{h:18,l:'2:00 PM'}],
+  'GEM GDPS':  [{h:4,l:'12:00 AM'},{h:16,l:'12:00 PM'}],
+  'NWS':       [{h:9,l:'4:00 AM'},{h:15,l:'10:00 AM'},{h:21,l:'4:00 PM'},{h:3,l:'10:00 PM'}],
+};
+function lastRun(model) {
+  const runs = RUNS[model]; if (!runs) return null;
+  const nowH = new Date().getUTCHours();
+  let last=null,lastDiff=999,next=null,nextDiff=999;
+  runs.forEach(r=>{
+    const ld=(nowH-r.h+24)%24; if(ld<lastDiff){lastDiff=ld;last=r;}
+    const nd=((r.h-nowH+24)%24)||24; if(nd<nextDiff){nextDiff=nd;next=r;}
+  });
+  if(!last) return null;
+  return {lastLabel:`as of ${last.l} ET`,nextLabel:next?`next ${next.l} ET`:'',cls:lastDiff<3?'fresh':lastDiff<8?'aging':'stale'};
+}
+
+/* ══════════════════════════════════════════
+   MATH — CORE DISTRIBUTION FUNCTIONS
+══════════════════════════════════════════ */
+function Φ(x){const s=x>=0?1:-1;x=Math.abs(x);const t=1/(1+.2316419*x),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.7814779+t*(-1.821256+t*1.3302744))));return s>0?1-p:p;}
+function gaussProb(lo,hi,mu,sig){if(sig<=0)return lo<=mu&&mu<hi?1:0;return Math.max(0,Φ((hi>9e8?8:(hi-mu)/sig))-Φ((lo<-9e8?-8:(lo-mu)/sig)));}
+
+// Student's t CDF approximation (ν degrees of freedom)
+// Uses regularized incomplete beta function via continued fraction.
+// ν=6 gives tails ~2.5x fatter than Gaussian at 3σ — empirically
+// close to actual NWS next-day forecast error distributions.
+// Much more conservative than Cauchy (which never decays).
+function tCDF(x, nu) {
+  // Abramowitz & Stegun approximation for t-distribution CDF
+  const absX = Math.abs(x);
+  const z = nu / (nu + absX * absX);
+  // Regularized incomplete beta I_z(nu/2, 1/2)
+  // Computed via continued fraction (Lentz method, truncated)
+  function betaInc(a, b, x) {
+    if (x < 0 || x > 1) return 0;
+    if (x === 0) return 0;
+    if (x === 1) return 1;
+    const lbeta = lgamma(a) + lgamma(b) - lgamma(a + b);
+    const front = Math.exp(Math.log(x)*a + Math.log(1-x)*b - lbeta) / a;
+    // Continued fraction
+    let cf = 1, d = 1, c2 = 1;
+    for (let m = 1; m <= 100; m++) {
+      const m2 = 2*m;
+      let num = m*(b-m)*x / ((a+m2-1)*(a+m2));
+      d = 1 + num*d; if(Math.abs(d)<1e-30) d=1e-30; d=1/d;
+      c2 = 1 + num/c2; if(Math.abs(c2)<1e-30) c2=1e-30;
+      cf *= c2*d;
+      num = -(a+m)*(a+b+m)*x / ((a+m2)*(a+m2+1));
+      d = 1 + num*d; if(Math.abs(d)<1e-30) d=1e-30; d=1/d;
+      c2 = 1 + num/c2; if(Math.abs(c2)<1e-30) c2=1e-30;
+      cf *= c2*d;
+      if(Math.abs(c2*d-1)<1e-8) break;
+    }
+    return front * cf;
+  }
+  function lgamma(z) {
+    // Lanczos approximation
+    const g=7, c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+    let x=z; if(x<0.5) return Math.log(Math.PI/Math.sin(Math.PI*x))-lgamma(1-x);
+    x--; let a=c[0]; const t=x+g+0.5;
+    for(let i=1;i<g+2;i++) a+=c[i]/(x+i);
+    return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a);
+  }
+  const p = 0.5 * betaInc(nu/2, 0.5, z);
+  return x >= 0 ? 1 - p : p;
+}
+
+function tProb(lo, hi, mu, sig, nu) {
+  // Scale t to match σ: divide by std dev of t-dist = sqrt(ν/(ν-2))
+  const scale = sig / Math.sqrt(nu/(nu-2));
+  const cdf = x => (x > 9e8) ? 1 : (x < -9e8) ? 0 : tCDF((x-mu)/scale, nu);
+  return Math.max(0, cdf(hi) - cdf(lo));
+}
+
+// Conservative fat-tail blend: 92% Gaussian + 8% Student-t(ν=6)
+// At 3σ: ~2x Gaussian probability (vs ~8x with v7 Cauchy blend)
+// At 2σ: ~1.3x Gaussian probability
+// Calibrated to approximate empirical NWS MAE tail behavior
+// before historical data is available. Tune WT_T once Supabase
+// calibration data accumulates.
+const WT_G = 0.92;  // Gaussian weight
+const WT_T = 0.08;  // Student-t weight
+const T_NU = 6;     // degrees of freedom — lower = fatter tails
+
+function fatTailProb(lo,hi,mu,sig){
+  return WT_G*gaussProb(lo,hi,mu,sig) + WT_T*tProb(lo,hi,mu,sig,T_NU);
+}
+
+// Bimodal: weighted sum of two Gaussians
+// storm scenario: mu - stormOffset, weight = PoP
+// clear scenario: mu + clearOffset, weight = 1 - PoP
+function bimodalProb(lo,hi,mu,sig,pop,stormOff,clearOff){
+  const pStorm = fatTailProb(lo,hi,mu-stormOff,sig);
+  const pClear = fatTailProb(lo,hi,mu+clearOff,sig);
+  return pop*pStorm + (1-pop)*pClear;
+}
+
+function ev(p,price){const P=price/100;return p*(1-P)*(1-kalshiFee(1,price/100))-(1-p)*P;}
+function kellyRaw(p,price){const P=price/100,b=(1-P)/P;return Math.max(0,(p*b-(1-p))/b);}
+
+// Accurate Kalshi maker fee formula: 0.0175 × C × P × (1-P), rounded up per contract
+function kalshiFee(c,p){return Math.ceil(0.0175*c*p*(1-p)*100)/100;}
+
+/* ══════════════════════════════════════════
+   REGIME CLASSIFICATION
+   Returns a regime object used by both the
+   probability correction and Kelly sizing.
+
+   Inputs: flags array from extractFlags,
+           ensemble sigma, hours to peak
+══════════════════════════════════════════ */
+function classifyRegime(flags, rawSigma, htp) {
+  const ftitles = flags.map(f=>f.title);
+  const isBimodal  = ftitles.some(t=>/bimodal/i.test(t));
+  const isFrontal  = ftitles.some(t=>/frontal/i.test(t));
+  const isUncert   = ftitles.some(t=>/confidence|spread/i.test(t));
+  const isWarm     = ftitles.some(t=>/downslope|offshore|above.normal/i.test(t));
+  const isCool     = ftitles.some(t=>/marine|below.normal/i.test(t));
+  const highConf   = ftitles.some(t=>/high.*confidence/i.test(t));
+
+  // σ inflation factor: how much to multiply raw model sigma
+  // These are informed by the national MAE analysis discussed
+  let sigmaInflation, regimeLabel, regimeCls, pop=0, stormOff=0, clearOff=0;
+
+  if (isBimodal) {
+    sigmaInflation = 2.0;
+    regimeLabel = 'BIMODAL';
+    regimeCls   = 'reg-conv';
+    pop       = 0.45;   // default storm weight — will be overridden if PoP parseable
+    stormOff  = 8;      // storm scenario pulls mu down 8°F
+    clearOff  = 2;      // clear scenario pulls mu up 2°F
+  } else if (isFrontal) {
+    sigmaInflation = 1.5;
+    regimeLabel = 'FRONTAL';
+    regimeCls   = 'reg-front';
+  } else if (isUncert || rawSigma > 3.5) {
+    sigmaInflation = 1.6;
+    regimeLabel = 'UNCERTAIN';
+    regimeCls   = 'reg-uncert';
+  } else if (highConf && rawSigma < 2) {
+    sigmaInflation = 0.85; // compress σ on high-confidence low-spread days
+    regimeLabel = 'HIGH CONF';
+    regimeCls   = 'reg-clean';
+  } else {
+    sigmaInflation = 1.0;
+    regimeLabel = 'CLEAN';
+    regimeCls   = 'reg-clean';
+  }
+
+  // Hours-to-peak multiplier on σ
+  // Calibrated to actual ECMWF/GFS day-1 MAE — previous values overshot badly.
+  // Regime inflation and time inflation share a common source (forecast uncertainty)
+  // so they should NOT multiply freely. The sigmaCap below prevents compounding.
+  let htpMult;
+  if      (htp <= 0)   htpMult = 0.55; // peak passed — obs nearly locks it
+  else if (htp <= 2)   htpMult = 0.65;
+  else if (htp <= 4)   htpMult = 0.80;
+  else if (htp <= 8)   htpMult = 1.00; // baseline
+  else if (htp <= 14)  htpMult = 1.10; // was 1.25 — tightened
+  else                 htpMult = 1.20; // was 1.55 — evening-before overshoot fixed
+
+  // Hard cap on effectiveSigmaMult by regime.
+  // Regime inflation and time horizon inflation share a common source
+  // (forecast uncertainty), so multiplying them freely double-counts.
+  // Caps are set to 95th-percentile empirical MAE multiples:
+  //   BIMODAL: true bimodal days have wide spreads but 2.5× is already generous
+  //   FRONTAL: frontal timing adds ~1.5-1.8× MAE at most
+  //   UNCERTAIN/CLEAN: standard inflation, no need to exceed 1.6×
+  const sigmaCap = isBimodal ? 2.50 : isFrontal ? 1.80 : isUncert ? 1.60 : 1.30;
+  const rawMult  = sigmaInflation * htpMult;
+  const effectiveSigmaMult = Math.min(rawMult, sigmaCap);
+
+  // Kelly time discount: how much to scale down Kelly due to horizon uncertainty
+  let kellyTimeDiscount;
+  if      (htp <= 0)  kellyTimeDiscount = 1.10; // Strategy 4 territory
+  else if (htp <= 2)  kellyTimeDiscount = 1.00;
+  else if (htp <= 6)  kellyTimeDiscount = 0.85;
+  else if (htp <= 12) kellyTimeDiscount = 0.65;
+  else if (htp <= 18) kellyTimeDiscount = 0.45;
+  else                kellyTimeDiscount = 0.30; // evening before
+
+  // Kelly regime discount: reduce sizing on uncertain regimes
+  const kellyRegimeDiscount = isBimodal ? 0.40 : isFrontal ? 0.65 : isUncert ? 0.55 : 1.0;
+
+  // Per-position tier cap based on regime
+  const tierCap = isBimodal ? 0.01 : (isFrontal||isUncert) ? 0.02 : 0.04;
+
+  return {
+    isBimodal, isFrontal, isUncert, isWarm, isCool, highConf,
+    sigmaInflation, htpMult, sigmaCap,
+    pop, stormOff, clearOff,
+    regimeLabel, regimeCls,
+    kellyTimeDiscount, kellyRegimeDiscount, tierCap,
+    effectiveSigmaMult,
+    sigmaCapped: rawMult > sigmaCap,
+  };
+}
+
+/* ══════════════════════════════════════════
+   CORRECTED DISTRIBUTION
+   Applies all adjustments to produce the
+   final mu and sigma used in probability calcs
+══════════════════════════════════════════ */
+function correctDistribution(ens, regime, metar, nwsHourly) {
+  if (!ens) return null;
+
+  // Weighted ensemble mean: ECMWF 35%, GFS 30%, ICON 20%, GEM 15%
+  const W = {GFS:0.30, 'ECMWF IFS':0.35, ICON:0.20, 'GEM GDPS':0.15};
+  let wSum=0, wMean=0;
+  Object.entries(W).forEach(([k,w])=>{
+    const v = ens.models[k];
+    if (v !== null && v !== undefined) { wMean += v*w; wSum += w; }
+  });
+  const weightedMean = wSum > 0 ? wMean/wSum : ens.mean;
+
+  // ── METAR nudge anchored to NWS hourly expected temp ──
+  // Correct logic: find what NWS expected at the current obs hour,
+  // measure how far off the observation is from that trajectory,
+  // then translate that track deviation into a peak forecast adjustment.
+  // This avoids conflating current temp with daily high forecast.
+  let mu = weightedMean;
+  let metarNudge = 0;
+  let nudgeAnchor = 'none';
+
+  if (metar?.currentTemp !== null && metar?.currentTemp !== undefined && metar?.isToday) {
+    let expectedNow = null;
+
+    if (nwsHourly && metar.obsTime) {
+      try {
+        const obsTime = new Date(metar.obsTime);
+        const matching = nwsHourly.find(p => {
+          const start = new Date(p.startTime);
+          const end   = new Date(p.endTime);
+          return obsTime >= start && obsTime < end;
+        });
+        if (matching?.temperature !== undefined) {
+          expectedNow = matching.temperature; // NWS hourly is °F
+          nudgeAnchor = 'nws-hourly';
+        }
+      } catch(e) { /* fall through */ }
+    }
+
+    // Fall back to weighted mean if NWS hourly unavailable
+    if (expectedNow === null) {
+      expectedNow = weightedMean;
+      nudgeAnchor = 'weighted-mean';
+    }
+
+    // Deviation of obs from expected trajectory at this hour
+    const trackDev = metar.currentTemp - expectedNow;
+
+    // Nudge weight scales with proximity to peak
+    const htpProxy = regime.htpMult;
+    const nudgeW = Math.max(0, Math.min(0.40, (1 - htpProxy/2) * 0.40));
+    metarNudge = trackDev * nudgeW;
+    mu = weightedMean + metarNudge;
+  }
+
+  const sigmaEff = Math.max(ens.sigma * regime.effectiveSigmaMult, 1.2);
+  const obsHigh  = metar?.obsHighToday ?? null;
+
+  return {mu, sigmaEff, weightedMean, metarNudge, nudgeAnchor, obsHigh, rawMean:ens.mean};
+}
+
+/* ══════════════════════════════════════════
+   BRACKET PROBABILITY — RAW PRIOR
+   Pure model probability with no obs conditioning.
+   Used as input to the Bayesian posterior update.
+══════════════════════════════════════════ */
+function bracketProbRaw(lo, hi, dist, regime) {
+  const {mu, sigmaEff, pop, stormOff, clearOff} = {...dist, ...regime};
+  let p;
+  if (regime.isBimodal) {
+    p = bimodalProb(lo, hi, dist.mu, sigmaEff, pop, stormOff, clearOff);
+  } else {
+    p = fatTailProb(lo, hi, dist.mu, sigmaEff);
+  }
+  return Math.max(0, Math.min(1, p));
+}
+
+/* ══════════════════════════════════════════
+   BAYESIAN POSTERIOR UPDATE
+   Updates the prior distribution continuously
+   as observed high (obsHigh) comes in.
+
+   Three conditioning modes blended by htpMult:
+
+   LOWER-BOUND (morning, htpMult > 0.85):
+     The day's high can still go higher.
+     Condition on high ≥ obsHigh.
+     Kill brackets strictly below obsHigh,
+     renormalize survivors.
+
+   BLENDED (approaching peak, 0.70 < htpMult ≤ 0.85):
+     Blend lower-bound and point-estimate.
+     Captures the transition from "still climbing"
+     to "nearly settled".
+
+   POINT-ESTIMATE (peak passed, htpMult ≤ 0.70):
+     The high is essentially locked.
+     Condition on high ≈ obsHigh.
+     Apply soft weights centered on obsHigh
+     with ±CLI_UNCERTAINTY spread to account
+     for METAR vs CLI rounding differences.
+     Renormalize — true % now sums to 100%.
+
+   Returns array of {bracket, pPost, isDeadLow}
+   where isDeadLow=true means confirmed impossible
+   (obs high already above ceiling — true zero).
+══════════════════════════════════════════ */
+const CLI_UNCERTAINTY = 1; // °F — METAR vs NWS CLI can differ by ±1°F
+
+function computePosterior(brackets, dist, regime) {
+  const obsHigh = dist.obsHigh;
+
+  // ── Step 0: MECE renormalization ──
+  // Kalshi brackets are mutually exclusive and collectively exhaustive.
+  // The continuous distribution assigns probability outside the bracket
+  // range (below the floor bracket, above the ceiling bracket) which
+  // simply disappears. Force priors to sum to 1.0 across the actual
+  // bracket set — the outermost brackets absorb all tail mass.
+  const rawPriors = brackets.map(b => bracketProbRaw(b.lo, b.hi, dist, regime));
+  const priorTotal = rawPriors.reduce((a, b) => a + b, 0);
+  const mecePriors = priorTotal > 0 ? rawPriors.map(p => p / priorTotal) : rawPriors;
+
+  // No obs high available — return MECE-normalized priors directly
+  if (obsHigh === null || obsHigh === undefined) {
+    return brackets.map((b, i) => ({
+      ...b,
+      pPost: mecePriors[i],
+      isDeadLow: false,
+    }));
+  }
+
+  const hm = regime.htpMult;
+
+  // Blend factor: 0 = pure lower-bound, 1 = pure point-estimate
+  // Transition happens between htpMult 0.85 (pre-peak) and 0.70 (post-peak)
+  const blend = Math.max(0, Math.min(1, (0.85 - hm) / 0.15));
+
+  // Step 1: priors are already MECE-normalized above
+  const priors = mecePriors;
+
+  // Step 2: lower-bound feasibility weights
+  // Brackets strictly below obs high are confirmed impossible (true zero)
+  // The boundary bracket (contains obsHigh) gets partial credit proportional
+  // to how much of its range is above obsHigh
+  const lbWeights = brackets.map(b => {
+    if (b.hi <= obsHigh) return 0;            // entire bracket below obs high — impossible
+    if (b.lo >= obsHigh) return 1;            // entire bracket above obs high — fully feasible
+    // Boundary bracket: fraction of range above obsHigh
+    const rangeSize = b.hi - b.lo;
+    return (b.hi - obsHigh) / rangeSize;
+  });
+
+  // Step 3: point-estimate weights
+  // Soft Gaussian-shaped weight centered on obsHigh
+  // with ±CLI_UNCERTAINTY spread
+  const peWeights = brackets.map(b => {
+    // Distance from obsHigh to nearest bracket boundary
+    const clampedObs = Math.max(b.lo, Math.min(b.hi - 1, obsHigh));
+    const dist_to_center = Math.abs(clampedObs - obsHigh);
+    return Math.exp(-(dist_to_center * dist_to_center) / (2 * CLI_UNCERTAINTY * CLI_UNCERTAINTY));
+  });
+
+  // Step 4: blend lb and pe weights
+  const weights = brackets.map((b, i) =>
+    (1 - blend) * lbWeights[i] + blend * peWeights[i]
+  );
+
+  // Step 5: apply weights to priors
+  const weighted = priors.map((p, i) => p * weights[i]);
+
+  // Step 6: renormalize so posterior sums to 1
+  const total = weighted.reduce((a, b) => a + b, 0);
+  const normalized = total > 0 ? weighted.map(p => p / total) : weighted;
+
+  return brackets.map((b, i) => ({
+    ...b,
+    pPost: normalized[i],
+    isDeadLow: b.hi <= obsHigh,  // true zero — obs high confirmed above ceiling
+  }));
+}
+
+/* ══════════════════════════════════════════
+   STATE & CACHE
+══════════════════════════════════════════ */
+const S = {key:'', day:'', ens:null, nwsHigh:null, nwsDisc:null, brackets:[], kalshiOk:false, fetchedAt:null, allOpps:[], log:[], metar:null, regime:null, dist:null, nwsHourly:null, structuredPoP:null, strategy4:null, mktSumPct:null, mktSumWarn:false};
+const CACHE = {}, TTL = 15*60*1000;
+
+/* ══════════════════════════════════════════
+   FETCH — KALSHI
+══════════════════════════════════════════ */
+async function fetchKalshi(key, iso, log) {
+  const cfg = ST[key];
+  const targetTicker = kalshiEventTicker(cfg.ks, iso);
+  log.push(`Target: ${targetTicker}`);
+  const url = `${KALSHI_BASE}/markets?series_ticker=${cfg.ks}&status=open&limit=50`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`Proxy ${r.status}`);
+  const data = await r.json();
+  const all = data.markets || [];
+  const filtered = all.filter(m => m.event_ticker === targetTicker);
+  log.push(`Kalshi: ${filtered.length} brackets for ${targetTicker}`);
+  return filtered;
+}
+
+/* ══════════════════════════════════════════
+   BRACKET PARSING
+══════════════════════════════════════════ */
+function parseBrackets(markets) {
+  if (!markets?.length) return [];
+  return markets.map(m => {
+    const sub = (m.subtitle||'').replace(/°/g,'').trim();
+    const st = m.strike_type;
+    let lo=null,hi=null,label=null;
+    const rng   = sub.match(/^(\d+(?:\.\d+)?)\s*(?:to|-)\s*(\d+(?:\.\d+)?)$/i);
+    const above = sub.match(/^(\d+(?:\.\d+)?)\s+or\s+(?:above|more|higher)/i);
+    const below = sub.match(/^(\d+(?:\.\d+)?)\s+or\s+(?:below|less|lower)/i);
+    if (rng)   { lo=+rng[1];   hi=+rng[2]+1;    label=`${+rng[1]}–${+rng[2]}`; }
+    else if (above) { lo=+above[1]+1; hi=1e9;   label=`${+above[1]+1}+`; }
+    else if (below) { lo=-1e9; hi=+below[1]+1;  label=`≤${+below[1]}`; }
+    else if (st==='between'&&m.floor_strike!=null) { lo=m.floor_strike; hi=m.cap_strike+1; label=`${m.floor_strike}–${m.cap_strike}`; }
+    else if (st==='greater'&&m.floor_strike!=null) { lo=m.floor_strike+1; hi=1e9; label=`${m.floor_strike+1}+`; }
+    else if (st==='less'&&m.cap_strike!=null)      { lo=-1e9; hi=m.cap_strike; label=`≤${m.cap_strike-1}`; }
+    else return null;
+    // API now returns dollar strings (yes_bid_dollars) — normalize to integer cents
+    function toCents(v){if(v==null)return null;const n=parseFloat(v);if(isNaN(n))return null;return n<2?Math.round(n*100):Math.round(n);}
+    const yb=toCents(m.yes_bid??m.yes_bid_dollars??null);
+    const ya=toCents(m.yes_ask??m.yes_ask_dollars??null);
+    const nb=toCents(m.no_bid??m.no_bid_dollars??null);
+    const na=toCents(m.no_ask??m.no_ask_dollars??null);
+    const lp=toCents(m.last_price??m.last_price_dollars??null);
+    let yesMid=null;
+    if(yb!==null&&ya!==null) yesMid=(yb+ya)/2;
+    else if(ya!==null) yesMid=ya;
+    else if(yb!==null) yesMid=yb;
+    else if(lp!==null) yesMid=lp;
+    if(yesMid===null) return null;
+    return {lo,hi,label,yesMid,yesBid:yb,yesAsk:ya,noBid:nb,noAsk:na,ticker:m.ticker};
+  }).filter(Boolean).sort((a,b)=>a.lo-b.lo);
+}
+
+/* ══════════════════════════════════════════
+   FETCH — OPEN-METEO (GFS + ICON + GEM)
+   ECMWF is fetched separately via its own
+   dedicated endpoint for native 9km resolution
+   and true hourly data (not interpolated).
+══════════════════════════════════════════ */
+async function fetchModels(key) {
+  const c = ST[key];
+  // GFS, ICON, GEM from standard forecast endpoint
+  const urlMain = `https://api.open-meteo.com/v1/forecast`
+    +`?latitude=${c.lat}&longitude=${c.lon}`
+    +`&hourly=temperature_2m&temperature_unit=fahrenheit`
+    +`&models=gfs_seamless,icon_seamless,gem_seamless`
+    +`&timezone=${encodeURIComponent(c.tz)}&forecast_days=3`;
+  // ECMWF IFS from dedicated endpoint — native 9km, true hourly, no model param needed
+  const urlECMWF = `https://api.open-meteo.com/v1/ecmwf`
+    +`?latitude=${c.lat}&longitude=${c.lon}`
+    +`&hourly=temperature_2m&temperature_unit=fahrenheit`
+    +`&timezone=${encodeURIComponent(c.tz)}&forecast_days=3`;
+  const [rMain, rECMWF] = await Promise.all([
+    fetch(urlMain),
+    fetch(urlECMWF),
+  ]);
+  if (!rMain.ok) throw new Error(`Open-Meteo ${rMain.status}`);
+  const main  = await rMain.json();
+  const ecmwf = rECMWF.ok ? await rECMWF.json() : null;
+  return {main, ecmwf};
+}
+function modelMax(data, iso, mk) {
+  const times = data.hourly?.time||[];
+  const vals = (data.hourly?.[`temperature_2m${mk?'_'+mk:''}`]||[])
+    .filter((v,i)=>times[i]?.startsWith(iso)&&v!==null);
+  return vals.length ? +Math.max(...vals).toFixed(1) : null;
+}
+function parseEns({main, ecmwf}, iso) {
+  // Main models — key is Open-Meteo suffix
+  const mainMk = ['gfs_seamless','icon_seamless','gem_seamless'];
+  const mainLbl = {gfs_seamless:'GFS', icon_seamless:'ICON', gem_seamless:'GEM GDPS'};
+  const out = {}, vals = [];
+  mainMk.forEach(k => {
+    const v = modelMax(main, iso, k);
+    out[mainLbl[k]] = v;
+    if (v !== null) vals.push(v);
+  });
+  // ECMWF from dedicated endpoint — single model, field is temperature_2m (no suffix)
+  const ecmwfVal = ecmwf ? modelMax(ecmwf, iso, '') : null;
+  out['ECMWF IFS'] = ecmwfVal !== null ? ecmwfVal : null;
+  if (ecmwfVal !== null) vals.push(ecmwfVal);
+  if (!vals.length) return null;
+  const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+  const sig  = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length);
+  return {models:out, mean:+mean.toFixed(1), sigma:+Math.max(sig,.5).toFixed(1), n:vals.length};
+}
+
+/* ══════════════════════════════════════════
+   FETCH — METAR via Render proxy
+   All temperatures rounded to nearest integer
+   to match NWS CLI settlement rounding (0.5→up).
+   Date filter uses station local timezone, not ET,
+   to avoid UTC midnight bleed across calendar dates.
+══════════════════════════════════════════ */
+function cToF(c) {
+  // Convert Celsius to Fahrenheit, rounded to nearest integer
+  // matching NWS CLI meteorological rounding (0.5 rounds up)
+  return Math.round(c * 9/5 + 32);
+}
+function utcToLocalDate(utcStr, tz) {
+  // Returns YYYY-MM-DD in the given timezone for a UTC timestamp string
+  return new Date(utcStr).toLocaleDateString('en-CA', {timeZone: tz});
+}
+
+async function fetchMetar(key, iso) {
+  try {
+    const station  = ST[key].metar;
+    const stationTz = ST[key].tz;
+    const isToday  = iso === etTodayISO();
+
+    // Current observation via proxy
+    const r = await fetch(`${METAR_BASE}/${station}`);
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!data?.length) return null;
+
+    const obs = data[0];
+    // All temps rounded to integer — matches CLI settlement scale
+    const currentTemp = obs.temp !== undefined ? cToF(obs.temp) : null;
+    const dewpoint    = obs.dewp !== undefined ? cToF(obs.dewp) : null;
+    const windSpeed   = obs.wspd ?? null;
+    const windDir     = obs.wdir ?? null;
+    const obsTime     = obs.reportTime || null;
+
+    // Observed high today via proxy (24h history)
+    // Filter by station LOCAL date to avoid UTC midnight bleeding
+    // into the wrong calendar day (e.g. 8 PM ET = next UTC date)
+    let obsHighToday = null;
+    let obsHighTime  = null;
+    if (isToday) {
+      try {
+        const h24r = await fetch(`${METAR_BASE}/${station}?hours=24`);
+        if (h24r.ok) {
+          const h24 = await h24r.json();
+          const todayObs = h24
+            .filter(o =>
+              o.reportTime &&
+              utcToLocalDate(o.reportTime, stationTz) === iso &&
+              o.temp !== undefined
+            )
+            .map(o => ({t: cToF(o.temp), ts: o.reportTime}));
+          if (todayObs.length) {
+            const peak = todayObs.reduce((a,b) => b.t > a.t ? b : a);
+            obsHighToday = peak.t;
+            obsHighTime  = peak.ts;
+          }
+        }
+      } catch(e) { /* non-fatal */ }
+    }
+
+    return {currentTemp, dewpoint, windSpeed, windDir, obsTime, obsHighToday, obsHighTime, isToday, station};
+  } catch(e) { return null; }
+}
+
+/* ══════════════════════════════════════════
+   FETCH — NWS HOURLY FORECAST
+   Returns structured hourly periods including
+   probabilityOfPrecipitation for each hour.
+   Used for: PoP extraction (more reliable than
+   AFD text parsing) and Strategy 4 divergence.
+══════════════════════════════════════════ */
+async function fetchNWSHourly(key) {
+  try {
+    const H = {'User-Agent':'KalshiWeatherDesk/1.0'};
+    const c = ST[key];
+    const p = await fetch(`https://api.weather.gov/points/${c.lat},${c.lon}`, {headers:H});
+    if (!p.ok) return null;
+    const pd = await p.json();
+    const fu = pd.properties?.forecastHourly; if (!fu) return null;
+    const f = await fetch(fu, {headers:H}); if (!f.ok) return null;
+    return (await f.json()).properties?.periods || null;
+  } catch(e) { return null; }
+}
+
+// Extract peak PoP for the target date from hourly periods
+function peakPoPForDay(hourlyPeriods, iso) {
+  if (!hourlyPeriods) return null;
+  const dayPeriods = hourlyPeriods.filter(p => p.startTime?.startsWith(iso));
+  if (!dayPeriods.length) return null;
+  const pops = dayPeriods
+    .map(p => p.probabilityOfPrecipitation?.value ?? 0)
+    .filter(v => v !== null);
+  return pops.length ? Math.max(...pops) : null;
+}
+
+// Strategy 4: detect obs vs NWS hourly divergence
+// Returns a signal object if current obs deviates 4°F+ from expected hourly track
+function detectStrategy4(metar, hourlyPeriods, cfg) {
+  if (!metar?.currentTemp || !hourlyPeriods || !metar.obsTime) return null;
+  try {
+    // Find the NWS hourly period that matches the current obs time
+    const obsTimeStr = metar.obsTime;
+    const matching = hourlyPeriods.find(p => {
+      const start = new Date(p.startTime);
+      const end   = new Date(p.endTime);
+      const obs   = new Date(obsTimeStr);
+      return obs >= start && obs < end;
+    });
+    if (!matching) return null;
+    const expected = matching.temperature; // already in °F from NWS
+    const actual   = metar.currentTemp;
+    const diff     = actual - expected;
+    if (Math.abs(diff) < 4) return null;
+    const dir = diff > 0 ? 'warmer' : 'cooler';
+    return {
+      expected, actual, diff,
+      desc: `Obs ${actual}°F is ${Math.abs(diff).toFixed(1)}°F ${dir} than NWS hourly track (${expected}°F). Strategy 4 territory — check upper${diff>0?'/lower':'/upper'} brackets for intraday edge.`
+    };
+  } catch(e) { return null; }
+}
+
+/* ══════════════════════════════════════════
+   FETCH — NWS
+══════════════════════════════════════════ */
+async function fetchNWSFcst(key) {
+  try {
+    const H={'User-Agent':'KalshiWeatherDesk/1.0'};
+    const c=ST[key];
+    const p=await fetch(`https://api.weather.gov/points/${c.lat},${c.lon}`,{headers:H});
+    if(!p.ok) return null;
+    const pd=await p.json();
+    const fu=pd.properties?.forecast; if(!fu) return null;
+    const f=await fetch(fu,{headers:H}); if(!f.ok) return null;
+    return (await f.json()).properties?.periods||null;
+  } catch(e){return null;}
+}
+function nwsHighForDay(periods, iso) {
+  if(!periods) return null;
+  const p=periods.find(p=>p.isDaytime&&p.startTime?.startsWith(iso))||periods.find(p=>p.isDaytime);
+  return p?{temp:p.temperature,name:p.name}:null;
+}
+async function fetchNWSDisc(key) {
+  try {
+    const H={'User-Agent':'KalshiWeatherDesk/1.0'};
+    const site=ST[key].nws.toUpperCase();
+    const r=await fetch(`https://api.weather.gov/products/types/AFD/locations/${site}`,{headers:H});
+    if(!r.ok) return null;
+    const d=await r.json();
+    const latest=d['@graph']?.[0]; if(!latest) return null;
+    const pr=await fetch(latest['@id'],{headers:H}); if(!pr.ok) return null;
+    const pd=await pr.json();
+    return {text:pd.productText||'',issued:pd.issuanceTime||null};
+  } catch(e){return null;}
+}
+
+/* ══════════════════════════════════════════
+   NWS INTELLIGENCE FLAGS
+   (unchanged from v6 — returns flag objects)
+══════════════════════════════════════════ */
+function extractFlags(disc, ens) {
+  if (!disc?.text) return [];
+  const txt=disc.text;
+  const stM=txt.match(/\.SHORT TERM\.\.\.([\s\S]*?)(?=\.\w[\w ]+\.\.\.|&&)/i);
+  const st=stM?stM[1]:txt.slice(0,1500);
+  const flags=[];
+  const convective=/convect|thunder|dryline|squall|severe/i.test(st);
+  const highPoP=(()=>{const m=st.match(/(\d{2,3})\s*%?\s*(?:pop|chance)/i);return m&&+m[1]>=40;})();
+
+  // Try to extract numeric PoP for bimodal weighting
+  let parsedPoP = 0.45;
+  const popM = st.match(/(\d{2,3})\s*%?\s*(?:pop|chance)/i);
+  if (popM) parsedPoP = Math.min(0.70, Math.max(0.20, +popM[1]/100));
+
+  if (convective&&(highPoP||/uncertain|low confidence|conditional/i.test(st)))
+    flags.push({cls:'fw',icon:'⚡',title:'Bimodal Temperature Risk',
+      desc:`Convective activity splits distribution into storm (−8°F) vs clear (+2°F) scenarios. Storm weight: ~${Math.round(parsedPoP*100)}% (PoP-derived). Fat-tail blend applied. Avoid middle-bracket directional trades.`,
+      pop:parsedPoP});
+  const frontM=/front(?:al)?\s+(?:passage|mov|arriv|push|cross)|cold front|warm front/i.test(st);
+  if (frontM) {
+    const tm=(()=>{const m=st.match(/front[^\.\n]{0,60}?(morning|afternoon|evening|overnight|late|early|noon)/i);return m?m[1]:'timing uncertain';})();
+    flags.push({cls:'ft',icon:'🌬️',title:`Frontal Passage — ${tm}`,
+      desc:'σ inflated ×1.5. Temperature peaks before front — earlier arrival caps the high. Monitor radar for actual front position vs. model timing.'});
+  }
+  if (/low confidence|uncertain|poor model|high uncertainty/i.test(st))
+    flags.push({cls:'fc',icon:'⚠️',title:'Low NWS Forecast Confidence',
+      desc:'σ inflated ×1.6. Reduce position sizes. Focus on deep tails (≤10¢) where edge survives high uncertainty.'});
+  if (ens&&ens.sigma>3.5)
+    flags.push({cls:'fc',icon:'📊',title:`High Model Spread — σ=${ens.sigma}°F`,
+      desc:`Raw model spread exceeds 3.5°F — σ inflation applied. Middle-bracket probabilities unreliable. Tail sells may still hold.`});
+  if (/cap|inversion|warm aloft|elevated mixed layer/i.test(st))
+    flags.push({cls:'fc',icon:'🔒',title:'Atmospheric Cap / Inversion',
+      desc:'Cap can suppress convection (temps higher) or break explosively (rapid cooling). Bimodal risk regardless of models.'});
+  if (/downslope|offshore|santa ana|foehn|chinook/i.test(st))
+    flags.push({cls:'fi',icon:'🌡️',title:'Downslope / Offshore Wind Warming',
+      desc:'Models frequently underestimate downslope warming. Upper brackets may be underpriced. Mu shifted slightly warm.'});
+  if (/marine layer|sea breeze|onshore flow|stratus/i.test(st))
+    flags.push({cls:'fi',icon:'🌊',title:'Marine Layer / Sea Breeze',
+      desc:'Marine influence suppresses highs below model guidance. Lower brackets may be underpriced.'});
+  if (/above normal|above average|warmer than normal/i.test(st)&&ens)
+    flags.push({cls:'fc',icon:'🔆',title:'Above-Normal Pattern',
+      desc:`NWS flagging above-average temps. Ensemble mean ${ens.mean}°F. Upper brackets may be underpriced.`});
+  if (/below normal|below average|cooler than normal/i.test(st)&&ens)
+    flags.push({cls:'fi',icon:'❄️',title:'Below-Normal Pattern',
+      desc:`NWS flagging below-average temps. Lower brackets potentially underpriced; upper brackets overpriced.`});
+  if (/high confidence|confidence is high|straightforward/i.test(txt)&&!convective)
+    flags.push({cls:'fg',icon:'✓',title:'High NWS Forecast Confidence',
+      desc:'σ compressed ×0.85. Normal distribution reliable today. Standard signal thresholds apply.'});
+
+  // Symmetric outlier detection: flag ANY model 2σ+ from the other three
+  // Catches GFS cold bias, GEM warm outliers, ICON divergence etc.
+  if (ens) {
+    const modelDefs = [
+      {name:'GFS',       icon:'🇺🇸', wt:'30%', val:ens.models['GFS']},
+      {name:'ECMWF IFS', icon:'🇪🇺', wt:'35%', val:ens.models['ECMWF IFS']},
+      {name:'ICON',      icon:'🇩🇪', wt:'20%', val:ens.models['ICON']},
+      {name:'GEM GDPS',  icon:'🍁', wt:'15%', val:ens.models['GEM GDPS']},
+    ].filter(m => m.val !== null && m.val !== undefined);
+
+    if (modelDefs.length >= 3) {
+      modelDefs.forEach(m => {
+        const others = modelDefs.filter(o => o.name !== m.name).map(o => o.val);
+        const otherMean = others.reduce((a,b)=>a+b,0)/others.length;
+        const otherSig  = Math.sqrt(others.reduce((a,b)=>a+(otherMean-b)**2,0)/others.length)||1;
+        const z = Math.abs(m.val - otherMean) / otherSig;
+        if (z >= 2) {
+          const dir = m.val > otherMean ? 'warmer' : 'cooler';
+          const gap = Math.abs(m.val - otherMean).toFixed(1);
+          flags.push({cls:'fc', icon:m.icon,
+            title:`${m.name} Outlier — ${m.val}°F (${dir})`,
+            desc:`${m.name} (wt ${m.wt}) is ${gap}°F ${dir} than the ${others.map(v=>v+'°F').join('/')} three-model consensus (${otherMean.toFixed(1)}°F). The ensemble mean is pulled ${dir} by ${(+gap * (m.name==='GFS'?0.30:m.name==='ECMWF IFS'?0.35:m.name==='ICON'?0.20:0.15)).toFixed(1)}°F. Consider the ex-outlier consensus of ${otherMean.toFixed(1)}°F as an alternative mean estimate.`});
+        }
+      });
+    }
+  }
+
+  return flags;
+}
+
+/* ══════════════════════════════════════════
+   SIGNALS — v7.6
+   Uses Bayesian posterior (MECE-renormalized)
+   for true %. Adds market lock suppression:
+   when the market has converged (≥88¢ on
+   either side), suppress all signals.
+   Research shows 90¢+ contracts win ~92-94%
+   (vs implied 90%) — slight favorite bias
+   means fighting the market at that price
+   has negative expected edge.
+══════════════════════════════════════════ */
+const MARKET_LOCK_THRESHOLD = 0.88; // suppress signals above this — TODAY only
+
+function computeSignals(dist, regime, brackets, isToday) {
+  if (!dist || !brackets.length) return [];
+
+  // Compute posterior for all brackets
+  const posterior = computePosterior(brackets, dist, regime);
+
+  return posterior.map(b => {
+    const {lo, hi, label, yesMid, yesAsk, noBid, noAsk, pPost, isDeadLow} = b;
+    const pt   = pPost;
+    const pm   = yesMid / 100;
+    const edge = (pt - pm) * 100;
+    const nop  = noAsk ?? Math.round(100 - yesMid);
+    const nob  = noBid ?? Math.round(100 - yesMid - 1);
+
+    // True zero — obs high has passed through this bracket's ceiling
+    if (isDeadLow) {
+      return {
+        label, lo, hi,
+        pTrue: 0,
+        pMkt: +(pm * 100).toFixed(1),
+        yesMid,
+        edge: +(0 - pm * 100).toFixed(1),
+        signal: 'dead',
+        actHtml: `<span class="adead">Settled — obs high rules out</span>`
+      };
+    }
+
+    // Market lock — only applies intraday (today's markets).
+    // Tomorrow's 88¢ bracket is the market's prior, not a converged posterior.
+    // No obs high, no METAR trajectory — no basis to suppress signals.
+    const yesLocked = isToday && pm >= MARKET_LOCK_THRESHOLD;
+    const noLocked  = isToday && (1 - pm) >= MARKET_LOCK_THRESHOLD;
+    if (yesLocked || noLocked) {
+      const lockSide  = yesLocked ? `YES ${Math.round(pm*100)}¢` : `NO ${Math.round((1-pm)*100)}¢`;
+      return {
+        label, lo, hi,
+        pTrue: +(pt * 100).toFixed(1),
+        pMkt:  +(pm * 100).toFixed(1),
+        yesMid, edge: +edge.toFixed(1),
+        signal: 'locked',
+        actHtml: `<span class="an">Market locked — ${lockSide}</span>`
+      };
+    }
+
+    // Full Kelly with discount stack
+    const kRaw    = kellyRaw(pt, yesMid);
+    const kAdj    = kRaw * 0.25 * regime.kellyTimeDiscount * regime.kellyRegimeDiscount;
+    const kFinal  = Math.min(kAdj, regime.tierCap);
+    const kPct    = (kFinal * 100).toFixed(1);
+
+    // NO side kelly
+    const kRawNo   = kellyRaw(1 - pt, nop);
+    const kAdjNo   = kRawNo * 0.25 * regime.kellyTimeDiscount * regime.kellyRegimeDiscount;
+    const kFinalNo = Math.min(kAdjNo, regime.tierCap);
+    const kPctNo   = (kFinalNo * 100).toFixed(1);
+
+    const isLongshot   = pm <= 0.10 && (pm - pt) * 100 > 4;
+    const isOverpriced = edge < -15 && pm > 0.20;
+    const evv          = ev(pt, yesMid);
+
+    let signal, actHtml;
+    if (regime.isBimodal && Math.abs(edge) < 8) {
+      signal = 'skip'; actHtml = `<span class="ask">Skip — bimodal day, edge unclear</span>`;
+    } else if (regime.effectiveSigmaMult > 2.5) {
+      signal = 'skip'; actHtml = `<span class="ask">Skip — σ×${regime.effectiveSigmaMult.toFixed(1)} too wide</span>`;
+    } else if (edge > 20 && evv > 0.06 && kFinal > 0) {
+      signal = 'strong'; actHtml = `<span class="ag">BUY YES at ${yesAsk ?? Math.round(yesMid)}¢</span><span class="asub">${kPct}% bankroll · limit maker</span>`;
+    } else if (edge > 10 && evv > 0.03 && kFinal > 0) {
+      signal = 'buy'; actHtml = `<span class="ag2">Buy YES at ${yesAsk ?? Math.round(yesMid)}¢</span><span class="asub">${kPct}% bankroll · maker</span>`;
+    } else if ((isLongshot || isOverpriced) && kFinalNo > 0) {
+      signal = 'sell'; actHtml = `<span class="ab">Buy NO at ${nob}¢ bid</span><span class="asub">${kPctNo}% bankroll · limit maker</span>`;
+    } else if (Math.abs(edge) > 5 && evv > 0) {
+      signal = 'marg'; actHtml = `<span class="am">Marginal</span><span class="asub">Maker only if price improves</span>`;
+    } else {
+      signal = 'none'; actHtml = `<span class="an">No action</span>`;
+    }
+
+    return {
+      label, lo, hi,
+      pTrue: +(pt * 100).toFixed(1),
+      pMkt:  +(pm * 100).toFixed(1),
+      yesMid, edge: +edge.toFixed(1),
+      signal, actHtml
+    };
+  });
+}
+
+/* ══════════════════════════════════════════
+   OPPORTUNITIES
+══════════════════════════════════════════ */
+function updateOpps(key,iso,sigs){
+  const ex=S.allOpps.filter(o=>!(o.key===key&&o.iso===iso));
+  const fr=sigs.filter(s=>s.signal!=='none'&&s.signal!=='skip'&&s.signal!=='dead'&&s.signal!=='locked')
+    .map(s=>({key,iso,city:ST[key].n,date:fmtDateShort(iso),lbl:s.label,edge:Math.abs(s.edge),edgeRaw:s.edge,signal:s.signal,actHtml:s.actHtml}));
+  S.allOpps=[...ex,...fr].sort((a,b)=>b.edge-a.edge).slice(0,10);
+  renderOpps();
+}
+function renderOpps(){
+  const el=document.getElementById('opp-list');
+  const top=S.allOpps.slice(0,3);
+  if(!top.length){el.innerHTML='<div class="opp-ph">Load a city to surface opportunities</div>';return;}
+  const nc=['n1','n2','n3'],ec=s=>s==='sell'?'eb':s==='strong'?'eg':'ea';
+  el.innerHTML=top.map((o,i)=>`
+    <div class="opp" onclick="jumpTo('${o.key}','${o.iso}')">
+      <div class="opp-rank ${nc[i]}">#${i+1}</div>
+      <div class="opp-body">
+        <div class="opp-city">${o.city}</div>
+        <div class="opp-sub">${o.date} · ${o.lbl}°F</div>
+        <div class="opp-act">${o.actHtml}</div>
+      </div>
+      <div class="opp-edge">
+        <div class="edge-v ${ec(o.signal)}">${o.edgeRaw>0?'+':''}${o.edgeRaw.toFixed(0)}pt</div>
+        <div class="edge-l">edge</div>
+      </div>
+    </div>`).join('');
+}
+function jumpTo(key,iso){
+  document.getElementById('sel-city').value=key;
+  const sel=document.getElementById('sel-date');
+  for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===iso){sel.selectedIndex=i;break;}}
+  S.key=key;S.day=iso;loadCity();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+function render(){
+  const {key,day:iso,ens,nwsHigh,nwsDisc,brackets,kalshiOk,fetchedAt,metar,regime,dist} = S;
+  const cfg=ST[key];
+  const dl=fmtDateLong(iso);
+  const isToday = iso === etTodayISO();
+  const sigs=computeSignals(dist,regime,brackets,isToday);
+  updateOpps(key,iso,sigs);
+
+  const age=fetchedAt?Date.now()-fetchedAt.getTime():Infinity;
+  const tsStr=fetchedAt?fetchedAt.toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:true}):'—';
+  const sc=age>20*60*1000?'stale':'fresh';
+  const rcls={strong:'ss',buy:'sb',sell:'sl',marg:'sm',dead:'sdead',locked:''};
+  const pc=v=>v>40?'ph':v>15?'pm':'pl';
+  const htp=hoursUntilPeak(key,iso);
+
+  let h='';
+
+  // ── Strategy 4 divergence alert ──
+  if (S.strategy4) {
+    const {diff, expected, actual} = S.strategy4;
+    const dir = diff > 0 ? 'ov-warm' : 'ov-cool';
+    h+=`<div class="flag fw" style="margin-bottom:10px;border-radius:8px">
+      <span class="flag-icon">🎯</span>
+      <div>
+        <span class="flag-title">Strategy 4 Signal — Intraday Divergence</span>
+        <span class="flag-desc">${S.strategy4.desc}</span>
+      </div>
+    </div>`;
+  }
+
+  // ── METAR observation card ──
+  if (metar?.currentTemp !== null && metar?.currentTemp !== undefined) {
+    const diff = ens ? metar.currentTemp - dist.mu : null;
+    const vc = diff===null?'':diff>3?'ov-warm':diff<-3?'ov-cool':'ov-ok';
+    const windStr = metar.windSpeed!==null ? `${metar.windSpeed}kt ${metar.windDir??''}°` : '—';
+    const obsTs = metar.obsTime ? new Date(metar.obsTime).toLocaleTimeString('en-US',{timeZone:cfg.tz,hour:'2-digit',minute:'2-digit',hour12:true}) : '';
+    h+=`<div class="obs-card">
+      <div class="obs-tile">
+        <div class="obs-lbl">Current Temp</div>
+        <div class="obs-val ${vc}">${metar.currentTemp}°F</div>
+        <div class="obs-sub">${obsTs} local${diff!==null?` · ${diff>0?'+':''}${diff.toFixed(1)}° vs model`:''}</div>
+      </div>
+      <div class="obs-tile">
+        <div class="obs-lbl">Obs High Today</div>
+        <div class="obs-val ${metar.obsHighToday!==null?'ov-ok':''}">${metar.obsHighToday!==null?metar.obsHighToday+'°F':'—'}</div>
+        <div class="obs-sub">${metar.obsHighToday!==null
+          ? (metar.obsHighTime
+              ? 'at '+new Date(metar.obsHighTime).toLocaleTimeString('en-US',{timeZone:cfg.tz,hour:'2-digit',minute:'2-digit',hour12:true})+' local'
+              : 'confirmed so far')
+          : 'awaiting obs'}</div>
+      </div>
+      <div class="obs-tile">
+        <div class="obs-lbl">Wind</div>
+        <div class="obs-val" style="font-size:15px;margin-top:4px">${windStr}</div>
+        <div class="obs-sub">station ${metar.station}</div>
+      </div>
+    </div>`;
+  }
+
+  // ── Model adjustment summary ──
+  if (dist && regime) {
+    const anchorLbl = dist.nudgeAnchor==='nws-hourly' ? 'vs NWS hourly track' : dist.nudgeAnchor==='weighted-mean' ? 'vs model mean (NWS hourly unavail.)' : '';
+    const biasStr = dist.metarNudge!==0
+      ? `${dist.metarNudge>0?'+':''}${dist.metarNudge.toFixed(1)}°F nudge ${anchorLbl}`
+      : 'no obs nudge';
+    const rawMu = dist.weightedMean.toFixed(1);
+    const corrMu = dist.mu.toFixed(1);
+    const corrSig = dist.sigmaEff.toFixed(1);
+    const peakH = peakHourFor(key, iso);
+    h+=`<div class="adj-bar">
+      <div class="adj-row">
+        <span class="adj-lbl">Distribution</span>
+        <span><span class="adj-val">${regime.isBimodal?'BIMODAL BLEND':'FAT-TAIL t(ν=6)'}</span><span class="adj-regime ${regime.regimeCls}">${regime.regimeLabel}</span></span>
+      </div>
+      <div class="adj-row">
+        <span class="adj-lbl">Weighted μ</span>
+        <span class="adj-val ${dist.metarNudge>0.5?'up':dist.metarNudge<-0.5?'dn':'ok'}">${corrMu}°F <span style="color:var(--dim);font-weight:400">(raw ${rawMu}°F · ${biasStr})</span></span>
+      </div>
+      <div class="adj-row">
+        <span class="adj-lbl">Effective σ</span>
+        <span class="adj-val ${regime.effectiveSigmaMult>1.3?'up':'ok'}">${corrSig}°F <span style="color:var(--dim);font-weight:400">(raw ${ens?.sigma??'—'}°F × ${regime.effectiveSigmaMult.toFixed(2)}${regime.sigmaCapped?` · capped at ${regime.sigmaCap}×`:''})</span></span>
+      </div>
+      <div class="adj-row">
+        <span class="adj-lbl">Hours to peak</span>
+        <span class="adj-val">${htp<=0?'Peak passed':htp+'h'} <span style="color:var(--dim);font-weight:400">(seasonal peak ${peakH}:00 local)</span> · Kelly ${Math.round(regime.kellyTimeDiscount*100)}%</span>
+      </div>
+    </div>`;
+  }
+
+  // Kalshi status bar
+  if(kalshiOk){
+    const popNote = S.structuredPoP !== null
+      ? ` · <span style="color:var(--dim)">PoP ${S.structuredPoP}% (NWS hourly)</span>`
+      : '';
+    // Posterior mode label
+    const obsHigh = dist?.obsHigh;
+    const hm = regime?.htpMult ?? 1;
+    const blend = obsHigh !== null ? Math.max(0, Math.min(1, (0.85 - hm) / 0.15)) : 0;
+    const postLabel = obsHigh === null ? '' :
+      blend < 0.1  ? ` · <span style="color:var(--dim)">posterior: lower-bound</span>` :
+      blend > 0.9  ? ` · <span style="color:var(--dim)">posterior: point-est.</span>` :
+                     ` · <span style="color:var(--dim)">posterior: blended ${Math.round(blend*100)}%</span>`;
+    h+=`<div class="live-bar ok"><div class="live-dot"></div>Kalshi live · ${brackets.length} brackets${postLabel}${popNote} · ${tsStr}</div>`;
+  } else {
+    const dbg=S.log.length?`<div class="dbg">${S.log.join('<br>')}</div>`:'';
+    h+=`<div class="live-bar fail">⚠ Kalshi unavailable${dbg}</div>`;
+  }
+
+  // ── Signal table ──
+  // True % column is posterior probability — always sums to 100% across live brackets
+  const postMode = dist?.obsHigh !== null
+    ? (regime.htpMult <= 0.70 ? 'POST-PEAK' : regime.htpMult <= 0.85 ? 'UPDATING' : 'LIVE')
+    : 'PRIOR';
+  h+=`<div class="sec-hd"><div class="sec-ttl">Signals — ${dl}</div><div class="sec-meta ${sc}"><span style="font-size:9px;padding:1px 5px;border-radius:3px;margin-right:5px;background:var(--faint2);border:1px solid var(--border)">${postMode}</span>Updated ${tsStr}</div></div>`;
+
+  if(!dist){
+    h+=`<div class="err-box">Model data unavailable — check connection and refresh.</div>`;
+  } else if(!sigs.length){
+    h+=`<div class="err-box" style="background:var(--a-bg);border-color:var(--a-bd);color:var(--a)">Kalshi market not open yet. Model distribution shown below.</div>`;
+    // Use posterior even for preview — pass synthetic bracket array
+    const base = Math.round(dist.mu/2)*2 - 10;
+    const previewBrackets = [];
+    for(let t=base; t<=base+20; t+=2) previewBrackets.push({lo:t,hi:t+2,label:`${t}–${t+1}`,yesMid:5,yesBid:null,yesAsk:null,noBid:null,noAsk:null});
+    const prev = computePosterior(previewBrackets, dist, regime);
+    h+=`<div class="tbl"><table><thead><tr><th>Bracket (est.)</th><th class="r">True %</th></tr></thead><tbody>`;
+    prev.forEach(b => {
+      if(b.pPost*100 < 0.5) return;
+      h+=`<tr><td><span class="brk">${b.lo}–${b.hi-1}°F</span></td><td class="r"><span class="pct ${pc(b.pPost*100)}">${(b.pPost*100).toFixed(1)}%</span></td></tr>`;
+    });
+    h+=`</tbody></table></div>`;
+  } else {
+    h+=`<div class="tbl"><table>
+      <thead><tr><th>Bracket</th><th class="r">Mkt %</th><th class="r">True %</th><th>Action</th></tr></thead>
+      <tbody>${sigs.map(s=>`<tr class="${rcls[s.signal]||''}">
+        <td><span class="brk">${s.label}°F</span></td>
+        <td class="r"><span class="pmkt">${s.pMkt}%</span></td>
+        <td class="r"><span class="pct ${pc(s.pTrue)}">${s.pTrue}%</span></td>
+        <td><div class="act-cell">${s.actHtml}</div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }
+
+  // ── Model table ──
+  h+=`<div class="sec-hd"><div class="sec-ttl">Model Forecasts — ${dl} High</div></div>`;
+  const mdefs=[
+    {lbl:'GFS',src:'NOAA · open-meteo',k:'GFS',w:'30%'},
+    {lbl:'ECMWF IFS',src:'ECMWF · open-meteo',k:'ECMWF IFS',w:'35%'},
+    {lbl:'ICON',src:'DWD Germany · open-meteo',k:'ICON',w:'20%'},
+    {lbl:'GEM GDPS',src:'Environment Canada',k:'GEM GDPS',w:'15%'},
+    {lbl:'NWS',src:`NWS ${cfg.nws.toUpperCase()}`,k:'NWS',w:'—'},
+  ];
+  const mu=dist?.mu??ens?.mean;
+  h+=`<div class="tbl"><table><thead><tr><th>Model</th><th class="r">High</th></tr></thead><tbody>`;
+  mdefs.forEach(m=>{
+    const v=m.k==='NWS'?(nwsHigh?.temp??null):(ens?.models?.[m.k]??null);
+    const tc=v===null?'':(mu&&Math.abs(v-mu)<1.5?'mc':v>mu?'mw':'ml');
+    const run=lastRun(m.lbl==='NWS'?'NWS':m.lbl);
+    h+=`<tr>
+      <td>
+        <span class="mn">${m.lbl}<span class="badge ${v!==null?'bf':'bn'}">${v!==null?'LIVE':'N/A'}</span>${m.w!=='—'?`<span style="font-family:var(--mono);font-size:9px;color:var(--dim);margin-left:4px">wt ${m.w}</span>`:''}</span>
+        <span class="ms">${m.src}</span>
+        ${run?`<span class="mrun ${run.cls}">${run.lastLabel}</span>`:''}
+        ${run?.nextLabel?`<span class="mrun" style="color:var(--dim)">${run.nextLabel}</span>`:''}
+      </td>
+      <td class="r">${v!==null?`<span class="mtemp ${tc}">${(+v).toFixed(1)}°F</span>`:`<span class="mna">—</span>`}</td>
+    </tr>`;
+  });
+  if(ens) h+=`<tr class="ens-row">
+    <td>
+      <span class="mn">Weighted Mean</span>
+      <span class="ms">${ens.n} models · raw σ=${ens.sigma}°F → eff. σ=${dist?.sigmaEff?.toFixed(1)??'—'}°F</span>
+    </td>
+    <td class="r"><span class="mtemp mw">${dist?.mu?.toFixed(1)??ens.mean}°F</span></td>
+  </tr>`;
+  h+=`</tbody></table></div>`;
+
+  // ── NWS Intelligence ──
+  h+=`<div class="sec-hd"><div class="sec-ttl">Forecast Intelligence</div></div>`;
+  if(nwsDisc){
+    const flags=extractFlags(nwsDisc,ens);
+    const issued=nwsDisc.issued?new Date(nwsDisc.issued).toLocaleString('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:true,timeZoneName:'short'}):'—';
+    h+=`<div class="nws-card">
+      <div class="nws-hd"><div class="nws-ttl">NWS ${cfg.nws.toUpperCase()} — Decision Factors</div><div class="nws-ts">${issued}</div></div>
+      <div class="nws-flags">`;
+    h+=flags.length
+      ?flags.map(f=>`<div class="flag ${f.cls}"><span class="flag-icon">${f.icon}</span><div><span class="flag-title">${f.title}</span><span class="flag-desc">${f.desc}</span></div></div>`).join('')
+      :`<div class="nws-clean">No significant decision flags detected. Clean pattern — fat-tail Gaussian with standard σ applied.</div>`;
+    h+=`</div></div>`;
+  } else {
+    h+=`<div class="nws-card"><div class="nws-clean">NWS discussion unavailable — <a href="https://forecast.weather.gov/product.php?site=${cfg.nws.toUpperCase()}&issuedby=${cfg.nws.toUpperCase()}&product=AFD" target="_blank" style="color:var(--b)">view at weather.gov</a></div></div>`;
+  }
+
+  // ── NWS Quick Links ──
+  const nwsL = NWS_LINKS[key];
+  if (nwsL) {
+    h+=`<div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
+      <a href="${nwsL.hourly}" target="_blank" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;background:var(--white);border:1px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:10px;color:var(--b);text-decoration:none;letter-spacing:.5px;box-shadow:var(--shadow)">
+        <span>📅</span> HOURLY
+      </a>
+      <a href="${nwsL.afd}" target="_blank" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;background:var(--white);border:1px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:10px;color:var(--b);text-decoration:none;letter-spacing:.5px;box-shadow:var(--shadow)">
+        <span>💬</span> DISCUSSION
+      </a>
+      <a href="${nwsL.cli}" target="_blank" style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;background:var(--white);border:1px solid var(--border);border-radius:7px;font-family:var(--mono);font-size:10px;color:var(--b);text-decoration:none;letter-spacing:.5px;box-shadow:var(--shadow)">
+        <span>🌡️</span> OBSERVED
+      </a>
+    </div>`;
+  }
+
+  document.getElementById('body').innerHTML=h;
+}
+
+/* ══════════════════════════════════════════
+   LOAD
+══════════════════════════════════════════ */
+async function loadCity(){
+  const {key,day:iso}=S;
+  if(!key||!iso) return;
+  const ck=`${key}_${iso}`;
+  S.log=[];
+
+  document.getElementById('body').innerHTML=`
+    <div class="loading"><div class="spin"></div>
+    <div class="load-txt">Fetching models · Kalshi · NWS · METAR<br>
+    Correcting distribution · Computing signals<br>
+    <span style="font-size:10px">${ST[key].n} · ${fmtDateLong(iso)}</span></div></div>`;
+
+  // ── Proxy wake-up ping ──
+  // Render free tier spins down after 15min inactivity.
+  // Fire a /health ping immediately so the server is warm
+  // by the time the real Kalshi request fires (~1-2s later).
+  fetch(`${PROXY}/health`).catch(()=>{});
+
+  try {
+    let c=CACHE[ck];
+    if(!c||Date.now()-c.ts>TTL){
+      const [modR,kalR,nwsR,discR,metR,hourR]=await Promise.allSettled([
+        fetchModels(key),
+        fetchKalshi(key,iso,S.log),
+        fetchNWSFcst(key),
+        fetchNWSDisc(key),
+        fetchMetar(key,iso),
+        fetchNWSHourly(key),
+      ]);
+      if(modR.status==='rejected') S.log.push(`Open-Meteo: ${modR.reason}`);
+      if(kalR.status==='rejected') S.log.push(`Kalshi: ${kalR.reason}`);
+      if(metR.status==='rejected') S.log.push(`METAR: ${metR.reason}`);
+      c={
+        modRaw:   modR.status==='fulfilled'?modR.value:null,
+        kalMkts:  kalR.status==='fulfilled'?kalR.value:[],
+        nwsPer:   nwsR.status==='fulfilled'?nwsR.value:null,
+        nwsD:     discR.status==='fulfilled'?discR.value:null,
+        metar:    metR.status==='fulfilled'?metR.value:null,
+        nwsHourly:hourR.status==='fulfilled'?hourR.value:null,
+        ts:Date.now(),
+      };
+      CACHE[ck]=c;
+    }
+
+    S.ens        = c.modRaw?parseEns(c.modRaw,iso):null;
+    S.brackets   = parseBrackets(c.kalMkts);
+    S.kalshiOk   = S.brackets.length>0;
+    S.nwsHigh    = nwsHighForDay(c.nwsPer,iso);
+    S.nwsDisc    = c.nwsD;
+    S.metar      = c.metar;
+    S.nwsHourly  = c.nwsHourly;
+    S.fetchedAt  = new Date(c.ts);
+    if(S.ens&&S.nwsHigh?.temp) S.ens.models['NWS']=S.nwsHigh.temp;
+
+    // ── Structured PoP from NWS hourly (more reliable than AFD text) ──
+    S.structuredPoP = peakPoPForDay(c.nwsHourly, iso);
+
+    // ── Strategy 4 divergence check ──
+    S.strategy4 = detectStrategy4(S.metar, c.nwsHourly, ST[key]);
+
+    // ── Market sum sanity check ──
+    if (S.brackets.length) {
+      const mktSum = S.brackets.reduce((a,b)=>a+b.yesMid,0);
+      S.mktSumPct = +mktSum.toFixed(1);
+      S.mktSumWarn = mktSum < 90 || mktSum > 115;
+    } else {
+      S.mktSumPct = null; S.mktSumWarn = false;
+    }
+
+    // ── Regime + corrected distribution ──
+    const flags = S.nwsDisc ? extractFlags(S.nwsDisc, S.ens) : [];
+    const htp   = hoursUntilPeak(key, iso);
+    S.regime    = classifyRegime(flags, S.ens?.sigma??2.5, htp);
+
+    // Use structured PoP if available and bimodal flag is set
+    const bimodalFlag = flags.find(f=>/bimodal/i.test(f.title));
+    if (bimodalFlag && S.regime.isBimodal) {
+      // Prefer structured PoP over text-parsed; fall back to flag's parsed value
+      const pop = S.structuredPoP !== null
+        ? Math.min(0.70, Math.max(0.20, S.structuredPoP/100))
+        : (bimodalFlag.pop ?? 0.45);
+      S.regime.pop = pop;
+      S.log.push(`Bimodal PoP: ${S.structuredPoP !== null ? S.structuredPoP+'% (NWS hourly)' : Math.round(pop*100)+'% (AFD text)'}`);
+    }
+
+    S.dist = correctDistribution(S.ens, S.regime, S.metar, c.nwsHourly);
+
+    render();
+  } catch(e){
+    S.log.push(`Fatal: ${e.message}`);
+    document.getElementById('body').innerHTML=`
+      <div class="err-box"><strong>Load failed:</strong> ${e.message}
+      <div class="dbg">${S.log.join('<br>')}</div></div>`;
+  }
+}
+
+function reload(){
+  if(!S.key||!S.day) return;
+  delete CACHE[`${S.key}_${S.day}`];
+  loadCity();
+}
+
+/* ══════════════════════════════════════════
+   INIT + EVENTS + CLOCK
+══════════════════════════════════════════ */
+const todayISO=populateDateDropdown();
+S.day=todayISO;
+
+document.getElementById('sel-city').onchange=e=>{
+  S.key=e.target.value;S.brackets=[];
+  if(S.key) loadCity();
+  else document.getElementById('body').innerHTML='<div class="empty-st">Select a date and city<br>to load live forecasts &amp; signals</div>';
+};
+document.getElementById('sel-date').onchange=e=>{
+  S.day=e.target.value;S.brackets=[];
+  if(S.key) loadCity();
+};
+
+function tick(){
+  document.getElementById('clock').textContent=
+    new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',hour12:true});
+}
+setInterval(tick,1000);tick();
+setInterval(()=>{if(S.key)reload();},TTL);
+setInterval(()=>{
+  const newToday=etTodayISO();
+  const sel=document.getElementById('sel-date');
+  if(sel.options[1]?.value!==newToday){
+    const wasDay=S.day;
+    populateDateDropdown();
+    if(wasDay===sel.options[1]?.value){S.day=newToday;sel.value=newToday;}
+  }
+},60*1000);
+
+/* ══════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0&&tab==='desk')||(i===1&&tab==='stats'));
+  });
+  document.getElementById('tab-desk').classList.toggle('active', tab==='desk');
+  document.getElementById('tab-stats').classList.toggle('active', tab==='stats');
+  if (tab==='stats') loadStats();
+}
+
+/* ══════════════════════════════════════════
+   STATS TAB — pulls from Supabase REST API
+══════════════════════════════════════════ */
+const SB_URL  = 'https://kwgddrsqlhmklhuisyou.supabase.co';
+const SB_KEY  = 'sb_publishable_SZYfL-sCRPJJDmHRcGz4Xg_SIAYRzUp';
+
+let statsLoaded = false;
+
+async function loadStats() {
+  if (statsLoaded) return;
+  const el = document.getElementById('stats-body');
+
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/trades?select=*&limit=500`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    });
+    const trades = await r.json();
+    statsLoaded = true;
+    renderStats(trades, el);
+  } catch(e) {
+    el.innerHTML = `<div class="stat-loading">Error loading stats: ${e.message}</div>`;
+  }
+}
+
+function renderStats(trades, el) {
+  // Separate settled vs open
+  const settled = trades.filter(t => t.won !== null && t.contracts > 0);
+  const open    = trades.filter(t => t.won === null && t.contracts > 0);
+  const wins    = settled.filter(t => t.won);
+  const losses  = settled.filter(t => !t.won);
+  const winPct  = settled.length ? (wins.length / settled.length * 100).toFixed(1) : '—';
+  const totalPnl = settled.reduce((a,t) => a + (t.pnl_cents||0), 0);
+  const pnlDollars = (totalPnl / 100).toFixed(2);
+
+  // Weighted avg price (weighted by contracts)
+  const totalContracts = settled.reduce((a,t) => a + (t.contracts||0), 0);
+  const weightedPrice  = totalContracts
+    ? (settled.reduce((a,t) => a + (t.price||0) * (t.contracts||0), 0) / totalContracts).toFixed(1)
+    : '—';
+
+  // By price bucket (tens: 0-9, 10-19, 20-29 ... 80-89, 90+)
+  const buckets = {};
+  settled.forEach(t => {
+    const b = Math.floor((t.price||0) / 10) * 10;
+    const key = b >= 90 ? '90+' : `${b}-${b+9}`;
+    if (!buckets[key]) buckets[key] = {n:0, w:0, contracts:0, priceSumWt:0};
+    buckets[key].n++;
+    if (t.won) buckets[key].w++;
+    buckets[key].contracts += (t.contracts||0);
+    buckets[key].priceSumWt += (t.price||0) * (t.contracts||0);
+  });
+
+  // By city
+  const cities = {};
+  settled.forEach(t => {
+    if (!t.city) return;
+    if (!cities[t.city]) cities[t.city] = {n:0, w:0, contracts:0, priceSumWt:0};
+    cities[t.city].n++;
+    if (t.won) cities[t.city].w++;
+    cities[t.city].contracts += (t.contracts||0);
+    cities[t.city].priceSumWt += (t.price||0) * (t.contracts||0);
+  });
+
+  const BREAK_EVEN = 67; // approximate break-even win % for typical entry range
+
+  el.innerHTML = `
+  <div class="stat-section">
+    <div class="stat-hd">Overview</div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-v blue">${settled.length + open.length}</div><div class="kpi-l">Total</div></div>
+      <div class="kpi"><div class="kpi-v green">${wins.length}</div><div class="kpi-l">Won</div></div>
+      <div class="kpi"><div class="kpi-v red">${losses.length}</div><div class="kpi-l">Lost</div></div>
+      <div class="kpi"><div class="kpi-v amber">${open.length}</div><div class="kpi-l">Open</div></div>
+    </div>
+    <div class="kpi-row" style="margin-top:8px">
+      <div class="kpi"><div class="kpi-v ${parseFloat(winPct)>=BREAK_EVEN?'green':'red'}">${winPct}%</div><div class="kpi-l">Win Rate</div></div>
+      <div class="kpi"><div class="kpi-v ${totalPnl>=0?'green':'red'}">${totalPnl>=0?'+':''}$${pnlDollars}</div><div class="kpi-l">Net P&L</div></div>
+      <div class="kpi"><div class="kpi-v">${weightedPrice}¢</div><div class="kpi-l">Avg YES</div></div>
+      <div class="kpi"><div class="kpi-v">${totalContracts}</div><div class="kpi-l">Contracts</div></div>
+    </div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--dim);padding:6px 2px">
+      Break-even ~67% • Avg YES price weighted by contracts
+    </div>
+  </div>
+
+  <div class="stat-section">
+    <div class="stat-hd">By Entry Price (YES ¢)</div>
+    <div class="stat-tbl">
+      <table>
+        <thead><tr>
+          <th>Bucket</th>
+          <th class="r">Trades</th>
+          <th class="r">Win%</th>
+          <th class="r">Avg YES</th>
+          <th class="r">P&L $</th>
+        </tr></thead>
+        <tbody>
+          ${Object.entries(buckets)
+            .sort((a,b) => parseInt(a[0]) - parseInt(b[0]))
+            .map(([k,v]) => {
+              const pct = (v.w/v.n*100).toFixed(0);
+              const avgYes = v.contracts ? (v.priceSumWt/v.contracts).toFixed(1) : '—';
+              const bPnl = settled.filter(t => {
+                const b = Math.floor((t.price||0)/10)*10;
+                const key = b>=90?'90+': b+'-'+(b+9);
+                return key===k;
+              }).reduce((a,t)=>a+(t.pnl_cents||0),0);
+              const pnlStr = (bPnl>=0?'+':'')+'$'+(bPnl/100).toFixed(2);
+              const barW = Math.round(pct);
+              const below = +pct < BREAK_EVEN;
+              return `<tr>
+                <td><span style="font-weight:500">${k}¢</span></td>
+                <td class="r">${v.n}</td>
+                <td class="r">
+                  <div>${pct}%</div>
+                  <div class="win-bar"><div class="win-fill ${below?'below':''}" style="width:${barW}%"></div></div>
+                </td>
+                <td class="r">${avgYes}¢</td>
+                <td class="r" style="color:${bPnl>=0?'var(--g)':'var(--r)'}">${pnlStr}</td>
+              </tr>`;
+            }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="stat-section">
+    <div class="stat-hd">By City</div>
+    <div class="stat-tbl">
+      <table>
+        <thead><tr>
+          <th>City</th>
+          <th class="r">Trades</th>
+          <th class="r">Win%</th>
+          <th class="r">Avg YES</th>
+          <th class="r">P&L $</th>
+        </tr></thead>
+        <tbody>
+          ${Object.entries(cities)
+            .sort((a,b) => b[1].n - a[1].n)
+            .map(([city,v]) => {
+              const pct = (v.w/v.n*100).toFixed(0);
+              const avgYes = v.contracts ? (v.priceSumWt/v.contracts).toFixed(1) : '—';
+              const cPnl = settled.filter(t=>t.city===city).reduce((a,t)=>a+(t.pnl_cents||0),0);
+              const pnlStr = (cPnl>=0?'+':'')+'$'+(cPnl/100).toFixed(2);
+              const barW = Math.round(pct);
+              const below = +pct < BREAK_EVEN;
+              const shortName = city.replace(/^K/,'');
+              return `<tr>
+                <td><span style="font-weight:500">${shortName}</span></td>
+                <td class="r">${v.n}</td>
+                <td class="r">
+                  <div>${pct}%</div>
+                  <div class="win-bar"><div class="win-fill ${below?'below':''}" style="width:${barW}%"></div></div>
+                </td>
+                <td class="r">${avgYes}¢</td>
+                <td class="r" style="color:${cPnl>=0?'var(--g)':'var(--r)'}">${pnlStr}</td>
+              </tr>`;
+            }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  `;
+}
+
+</script>
+</body>
+</html>
